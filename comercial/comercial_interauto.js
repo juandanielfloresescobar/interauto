@@ -241,7 +241,7 @@ function actualizarRankingVendedores(mesVentas) {
   container.innerHTML = vendedoresOrdenados.map((v, idx) => {
     const posClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
     return `
-      <div class="ranking-item">
+      <div class="ranking-item" onclick="mostrarVentasVendedor('${v.nombre.replace(/'/g, "\\'")}')">
         <div class="ranking-position ${posClass}">${idx + 1}</div>
         <div class="ranking-info">
           <p class="ranking-name">${v.nombre}</p>
@@ -251,6 +251,124 @@ function actualizarRankingVendedores(mesVentas) {
       </div>
     `;
   }).join('');
+}
+
+// ==========================================
+// MODAL VENDEDOR - MOSTRAR VENTAS
+// ==========================================
+function mostrarVentasVendedor(nombreVendedor) {
+  const modal = document.getElementById('modal-vendedor');
+  if (!modal) return;
+
+  // Filtrar ventas del vendedor en el mes seleccionado
+  const ventasVendedor = ventasData.filter(v => {
+    if (!v.fecha || v.vendedor !== nombreVendedor) return false;
+    const fechaObj = new Date(v.fecha);
+    const year = fechaObj.getFullYear();
+    const mes = fechaObj.getMonth();
+    const clave = `${year}-${String(mes + 1).padStart(2, '0')}`;
+    return clave === estado.mesSeleccionado;
+  });
+
+  // Actualizar título
+  document.getElementById('modal-vendedor-nombre').textContent = `Ventas de ${nombreVendedor}`;
+
+  // Actualizar estadísticas
+  document.getElementById('modal-total-ventas').textContent = ventasVendedor.length;
+
+  const modelosUnicos = new Set(ventasVendedor.map(v => (v.modelo || 'Sin Modelo').toUpperCase()));
+  document.getElementById('modal-modelos-distintos').textContent = modelosUnicos.size;
+
+  // Crear lista de ventas
+  const detalleContainer = document.getElementById('modal-ventas-detalle');
+  if (ventasVendedor.length === 0) {
+    detalleContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No hay ventas registradas</p>';
+  } else {
+    // Ordenar por fecha descendente
+    const ventasOrdenadas = ventasVendedor.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+    detalleContainer.innerHTML = ventasOrdenadas.map(v => {
+      const fecha = new Date(v.fecha);
+      const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+      const modelo = (v.modelo || 'Sin Modelo').toUpperCase();
+
+      return `
+        <div class="modal-venta-item">
+          <div class="modal-venta-info">
+            <p class="modal-venta-modelo">${modelo}</p>
+            <p class="modal-venta-fecha">${fechaFormateada}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Mostrar modal
+  modal.classList.add('active');
+}
+
+function cerrarModalVendedor() {
+  const modal = document.getElementById('modal-vendedor');
+  if (modal) modal.classList.remove('active');
+}
+
+// Event listeners para el modal
+document.addEventListener('DOMContentLoaded', function() {
+  const btnClose = document.getElementById('modal-vendedor-close');
+  if (btnClose) {
+    btnClose.addEventListener('click', cerrarModalVendedor);
+  }
+
+  const modal = document.getElementById('modal-vendedor');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        cerrarModalVendedor();
+      }
+    });
+  }
+
+  // Botón descarga PNG ranking
+  const btnDownload = document.getElementById('btn-download-ranking');
+  if (btnDownload) {
+    btnDownload.addEventListener('click', descargarRankingPNG);
+  }
+});
+
+// ==========================================
+// DESCARGA PNG DEL RANKING
+// ==========================================
+function descargarRankingPNG() {
+  const rankingCard = document.getElementById('ranking-card-container');
+  if (!rankingCard) return;
+
+  // Ocultar temporalmente el botón de descarga
+  const btnDownload = document.getElementById('btn-download-ranking');
+  if (btnDownload) btnDownload.style.visibility = 'hidden';
+
+  html2canvas(rankingCard, {
+    backgroundColor: '#faf7f2',
+    scale: 2,
+    logging: false,
+    useCORS: true
+  }).then(canvas => {
+    // Restaurar botón
+    if (btnDownload) btnDownload.style.visibility = 'visible';
+
+    // Crear link de descarga
+    const link = document.createElement('a');
+    const mesNombre = estado.mesSeleccionado.replace('-', '_');
+    link.download = `ranking_vendedores_${mesNombre}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err => {
+    console.error('Error al generar PNG:', err);
+    if (btnDownload) btnDownload.style.visibility = 'visible';
+  });
 }
 
 function actualizarModelosVendidos(mesVentas) {
@@ -305,8 +423,8 @@ function renderGraficoVentas() {
         {
           label: 'Unidades Vendidas',
           data: ultimos3Meses.map(d => d.unidades),
-          backgroundColor: 'rgba(180, 0, 26, 0.8)',
-          borderColor: '#b4001a',
+          backgroundColor: 'rgba(26, 26, 26, 0.85)',
+          borderColor: '#1a1a1a',
           borderWidth: 1,
           borderRadius: 6,
         },
