@@ -56,6 +56,78 @@
       color: white;
       font-weight: 600;
     }
+
+    /* Botón Flotante Comercial */
+    .btn-comercial-float {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a1a1a, #333);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      text-decoration: none;
+    }
+
+    .btn-comercial-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(135deg, #b4001a, #dc2626);
+    }
+
+    .btn-comercial-float svg {
+      width: 26px;
+      height: 26px;
+      color: #fff;
+      stroke: #fff;
+    }
+
+    .btn-comercial-float .tooltip {
+      position: absolute;
+      right: 70px;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .btn-comercial-float:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    @media (max-width: 768px) {
+      .btn-comercial-float {
+        bottom: 16px;
+        right: 16px;
+        width: 50px;
+        height: 50px;
+      }
+
+      .btn-comercial-float svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .btn-comercial-float .tooltip {
+        display: none;
+      }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
@@ -448,5 +520,17 @@
     </main>
     <footer>© 2025 Saav Rent a Car</footer>
   </div>
+
+  <!-- ========== BOTÓN FLOTANTE COMERCIAL ========== -->
+  <a href="https://tu-enlace-vercel.vercel.app" target="_blank" class="btn-comercial-float" title="Panel Comercial">
+    <span class="tooltip">Panel Comercial</span>
+    <!-- Icono de gráfico de ventas/tendencia -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="20" x2="12" y2="10"></line>
+      <line x1="18" y1="20" x2="18" y2="4"></line>
+      <line x1="6" y1="20" x2="6" y2="16"></line>
+    </svg>
+  </a>
+
 </body>
 </html>
