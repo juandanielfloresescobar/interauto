@@ -1112,6 +1112,11 @@ select:focus {
 .ingresos-filtros select { min-width: 200px; background: #0b0f1a; color: #fff; border-color: rgba(255, 255, 255, 0.15); box-shadow: none; }
 .ingresos-filtros select:focus { border-color: rgba(255, 255, 255, 0.4); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08); }
 
+/* Card ancha para desktop (span 2) */
+.card-wide {
+  grid-column: span 2;
+}
+
 table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
 thead { background: var(--secondary); color: #fff; }
 th, td { padding: 12px; text-align: left; }
@@ -1199,6 +1204,382 @@ footer { margin: 32px 0 48px; text-align: center; color: var(--muted); font-size
   .hero-actions { flex-direction: column; }
   .date-controls, .date-picker, .date-pill { align-items: stretch; width: 100%; justify-content: center; text-align: center; }
   select, .calendar-toggle { min-width: unset; width: 100%; }
+
+  /* ========== OPTIMIZACIONES INTERAUTO MÓVIL ========== */
+
+  /* Forzar cards a una columna en móvil (evita span 2) */
+  .ingresos-panel {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  .ingresos-panel .ingresos-card,
+  .ingresos-panel .card-wide {
+    grid-column: auto !important;
+  }
+
+  /* Ajustar padding de cards en móvil */
+  .ingresos-card {
+    padding: 18px 16px;
+  }
+
+  .ingresos-card .value {
+    font-size: 1.5rem;
+  }
+
+  /* Botón volver optimizado para móvil */
+  .btn-volver {
+    top: 12px;
+    left: 12px;
+    padding: 10px 14px;
+    font-size: 0.75rem;
+  }
+
+  .btn-volver svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Hero Interauto móvil */
+  .hero.hero-interauto .hero-content {
+    padding: 100px 20px 60px;
+    gap: 14px;
+  }
+
+  .hero.hero-interauto .hero-logo,
+  .hero-logo {
+    width: min(220px, 60vw);
+  }
+
+  .hero.hero-interauto h1,
+  .hero h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    line-height: 1.2;
+  }
+
+  .hero.hero-interauto p,
+  .hero p {
+    font-size: 0.9rem;
+  }
+
+  /* Section header móvil */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .ingresos-filtros {
+    width: 100%;
+  }
+
+  .ingresos-filtros label {
+    width: 100%;
+  }
+
+  .ingresos-filtros select {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* Segment legend en columnas para móvil */
+  .segment-legend {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .segment-legend-item {
+    font-size: 0.72rem;
+    justify-content: flex-start;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .segment-legend-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Mix items optimizados para móvil */
+  .mix-list {
+    gap: 6px;
+  }
+
+  .mix-item {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .mix-item .marca {
+    font-size: 0.85rem;
+    min-width: 80px;
+  }
+
+  .mix-bar-container {
+    order: 3;
+    width: 100%;
+    flex: none;
+    margin: 4px 0 0 0;
+    height: 6px;
+  }
+
+  .mix-item .porcentaje {
+    font-size: 0.85rem;
+    margin-left: auto;
+  }
+
+  /* Chart panel móvil */
+  .ingresos-chart-panel {
+    margin-top: 16px;
+    padding: 16px;
+  }
+
+  .chart-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .chart-container {
+    min-height: 200px;
+  }
+
+  /* Progress bar ajustes */
+  .progress-info {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  /* Landing page móvil */
+  .landing-content {
+    padding: 32px 20px;
+    gap: 24px;
+  }
+
+  .landing-logo {
+    width: min(240px, 65vw);
+  }
+
+  .landing-title {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+  }
+
+  .landing-buttons {
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .landing-btn {
+    width: 100%;
+    min-width: unset;
+    padding: 24px 20px;
+  }
+
+  /* Loader móvil */
+  .loader-logo {
+    width: min(200px, 55vw);
+  }
+
+  .loader-progress-container {
+    width: min(240px, 70vw);
+  }
+
+  /* Footer móvil */
+  footer {
+    margin: 24px 0 32px;
+    font-size: 0.75rem;
+  }
+}
+
+/* ========== PANTALLAS MUY PEQUEÑAS (< 480px) ========== */
+@media (max-width: 480px) {
+  /* Hero ultra compacto */
+  .hero.hero-interauto .hero-content,
+  .hero-content {
+    padding: 90px 16px 50px;
+  }
+
+  .hero.hero-interauto .hero-logo,
+  .hero-logo {
+    width: min(180px, 50vw);
+  }
+
+  .hero.hero-interauto h1,
+  .hero h1 {
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+  }
+
+  /* Main content ultra compacto */
+  main {
+    padding: 80px 12px 40px;
+  }
+
+  .content-wrapper {
+    gap: 24px;
+  }
+
+  /* Cards más compactas */
+  .ingresos-card {
+    padding: 14px 12px;
+    border-radius: 14px;
+  }
+
+  .ingresos-card h3 {
+    font-size: 0.75rem;
+  }
+
+  .ingresos-card .value {
+    font-size: 1.3rem;
+  }
+
+  /* Section header ultra compacto */
+  .section-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .section-header p {
+    font-size: 0.85rem;
+  }
+
+  /* Mix items más compactos */
+  .mix-item {
+    padding: 8px;
+  }
+
+  .mix-item .marca {
+    font-size: 0.8rem;
+    min-width: 70px;
+  }
+
+  .mix-item .porcentaje {
+    font-size: 0.8rem;
+  }
+
+  /* Segment legend ultra compacto */
+  .segment-legend-item {
+    font-size: 0.68rem;
+    padding: 5px 0;
+  }
+
+  /* Chart más compacto */
+  .ingresos-chart-panel {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .chart-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .chart-container {
+    min-height: 180px;
+  }
+
+  /* Botón volver ultra compacto */
+  .btn-volver {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    gap: 6px;
+  }
+
+  .btn-volver svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Landing ultra compacto */
+  .landing-content {
+    padding: 24px 16px;
+    gap: 20px;
+  }
+
+  .landing-logo {
+    width: min(180px, 55vw);
+  }
+
+  .landing-title {
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+  }
+
+  .landing-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .landing-btn {
+    padding: 20px 16px;
+    gap: 10px;
+    border-radius: 16px;
+  }
+
+  .landing-btn .btn-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .landing-btn .btn-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .landing-btn .btn-text {
+    font-size: 1rem;
+  }
+
+  .landing-btn .btn-desc {
+    font-size: 0.75rem;
+  }
+
+  /* Progress info */
+  .progress-info span,
+  .progress-info strong {
+    font-size: 0.7rem;
+  }
+
+  /* Loader ultra compacto */
+  .loader-logo {
+    width: min(160px, 50vw);
+  }
+
+  .loader-progress-container {
+    width: min(200px, 65vw);
+  }
+
+  .loader-text {
+    font-size: 0.8rem;
+  }
+
+  /* Botón flotante comercial */
+  .btn-comercial-float {
+    bottom: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .btn-comercial-float svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ========== TABLETS (481px - 768px) ========== */
+@media (min-width: 481px) and (max-width: 768px) {
+  /* Cards en 2 columnas para tablets */
+  .ingresos-panel {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Las cards anchas ocupan 2 columnas en tablet */
+  .ingresos-panel .card-wide {
+    grid-column: span 2 !important;
+  }
 }
 
 @media (min-width: 1100px) {
