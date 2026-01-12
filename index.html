@@ -111,6 +111,60 @@
       visibility: visible;
     }
 
+    /* Botón Flotante ERP */
+    .btn-erp-float {
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+      transition: all 0.3s ease;
+      z-index: 999;
+      text-decoration: none;
+    }
+
+    .btn-erp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px rgba(37, 99, 235, 0.5);
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+    }
+
+    .btn-erp-float svg {
+      width: 26px;
+      height: 26px;
+      color: #fff;
+      stroke: #fff;
+    }
+
+    .btn-erp-float .tooltip {
+      position: absolute;
+      right: 70px;
+      background: #1e3a5f;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .btn-erp-float:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+
     @media (max-width: 768px) {
       .btn-comercial-float {
         bottom: 16px;
@@ -125,6 +179,22 @@
       }
 
       .btn-comercial-float .tooltip {
+        display: none;
+      }
+
+      .btn-erp-float {
+        bottom: 78px;
+        right: 16px;
+        width: 50px;
+        height: 50px;
+      }
+
+      .btn-erp-float svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .btn-erp-float .tooltip {
         display: none;
       }
     }
@@ -520,6 +590,17 @@
     </main>
     <footer>© 2025 Saav Rent a Car</footer>
   </div>
+
+  <!-- ========== BOTÓN FLOTANTE ERP ========== -->
+  <a href="erp.html" class="btn-erp-float" title="Portal de Ingesta">
+    <span class="tooltip">Portal ERP</span>
+    <!-- Icono de base de datos / entrada de datos -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/>
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+    </svg>
+  </a>
 
   <!-- ========== BOTÓN FLOTANTE COMERCIAL ========== -->
   <a href="https://interauto-sales.vercel.app/" target="_blank" class="btn-comercial-float" title="Panel Comercial">
