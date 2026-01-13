@@ -21,8 +21,8 @@ const supabaseStaging = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY,
 // 2. MAPEO DE USUARIOS A TIPO
 // ==========================================
 const USER_ROLES = {
-  'rentacar@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
-  'juan.flores@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' }
+  'daniela.eguez@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
+  'pablo.toro@saavrentacar.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' }
 };
 
 // ==========================================
