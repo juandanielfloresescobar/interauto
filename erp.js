@@ -1,5 +1,6 @@
 // ==========================================
 // ERP DATA ENTRY - GRUPO SAA
+// Con Supabase Auth
 // ==========================================
 
 // ==========================================
@@ -8,37 +9,33 @@
 const SUPABASE_URL = 'https://zzelbikylbbxclnskgkf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6ZWxiaWt5bGJieGNsbnNrZ2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MjA4NDMsImV4cCI6MjA4MTQ5Njg0M30.VGqblbw-vjQWUTpz8Xdhk5MNLyNniXvAO9moMWVAd8s';
 
-// Cliente para esquema STAGING (datos pendientes de validación)
+// Cliente principal para Auth
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Cliente para esquema STAGING
 const supabaseStaging = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
   db: { schema: 'staging' },
 });
 
 // ==========================================
-// 2. CREDENCIALES DE USUARIOS (Hardcodeadas)
+// 2. MAPEO DE USUARIOS A TIPO
 // ==========================================
-const USUARIOS = {
-  rentacar_admin: {
-    password: 'rentacar2025',
-    tipo: 'rentacar',
-    nombre: 'Rent a Car Admin',
-    badge: 'RENT A CAR'
-  },
-  interauto_admin: {
-    password: 'interauto2025',
-    tipo: 'interauto',
-    nombre: 'Interauto Admin',
-    badge: 'INTERAUTO'
-  }
+const USER_ROLES = {
+  'rentacar@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
+  'interauto@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' }
 };
 
 // ==========================================
 // 3. ESTADO DE LA APLICACIÓN
 // ==========================================
 let estado = {
-  usuarioActivo: null,
+  usuario: null,
   tipoUsuario: null,
   tabActiva: null,
-  notificaciones: []
+  notificaciones: [],
+  formPendiente: null,
+  tablaPendiente: null,
+  tipoRegistroPendiente: null
 };
 
 // ==========================================
@@ -61,8 +58,9 @@ function inicializarElementos() {
   elementos.loginSection = document.getElementById('login-section');
   elementos.loginForm = document.getElementById('login-form');
   elementos.loginError = document.getElementById('login-error');
-  elementos.inputUsername = document.getElementById('username');
+  elementos.inputEmail = document.getElementById('email');
   elementos.inputPassword = document.getElementById('password');
+  elementos.btnLogin = document.getElementById('btn-login');
 
   // Dashboard
   elementos.erpDashboard = document.getElementById('erp-dashboard');
@@ -89,6 +87,16 @@ function inicializarElementos() {
   elementos.formIaVentas = document.getElementById('form-ia-ventas');
   elementos.formIaIngresos = document.getElementById('form-ia-ingresos');
 
+  // Checkbox anticipo
+  elementos.checkAnticipo = document.getElementById('check-anticipo');
+  elementos.campoAnticipo = document.getElementById('campo-anticipo');
+
+  // Modal confirmación
+  elementos.modalConfirm = document.getElementById('modal-confirm');
+  elementos.btnCloseConfirm = document.getElementById('btn-close-confirm');
+  elementos.btnCancelConfirm = document.getElementById('btn-cancel-confirm');
+  elementos.btnConfirmSubmit = document.getElementById('btn-confirm-submit');
+
   // Notificaciones
   elementos.btnNotifications = document.getElementById('btn-notifications');
   elementos.notificationCount = document.getElementById('notification-count');
@@ -113,11 +121,33 @@ function inicializarEventos() {
     tab.addEventListener('click', () => cambiarTab(tab.dataset.tab));
   });
 
-  // Formularios
-  elementos.formRcIngresos.addEventListener('submit', (e) => handleSubmit(e, 'staging_rentacar_ingresos', 'Ingresos Rent a Car'));
-  elementos.formRcCobranzas.addEventListener('submit', (e) => handleSubmit(e, 'staging_rentacar_cobranzas', 'Cuenta por Cobrar'));
-  elementos.formIaVentas.addEventListener('submit', (e) => handleSubmit(e, 'staging_interauto_ventas', 'Venta Interauto'));
-  elementos.formIaIngresos.addEventListener('submit', (e) => handleSubmit(e, 'staging_interauto_ingresos', 'Ingresos Interauto'));
+  // Formularios - abrir modal de confirmación
+  elementos.formRcIngresos.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_rentacar_ingresos', 'Ingresos Rent a Car'));
+  elementos.formRcCobranzas.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_rentacar_cobranzas', 'Cuenta por Cobrar'));
+  elementos.formIaVentas.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_interauto_ventas', 'Venta Interauto'));
+  elementos.formIaIngresos.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_interauto_ingresos', 'Ingreso Facturado'));
+
+  // Checkbox anticipo
+  if (elementos.checkAnticipo) {
+    elementos.checkAnticipo.addEventListener('change', () => {
+      elementos.campoAnticipo.classList.toggle('show', elementos.checkAnticipo.checked);
+      const inputPendiente = elementos.campoAnticipo.querySelector('input');
+      if (elementos.checkAnticipo.checked) {
+        inputPendiente.required = true;
+      } else {
+        inputPendiente.required = false;
+        inputPendiente.value = '';
+      }
+    });
+  }
+
+  // Modal confirmación
+  elementos.btnCloseConfirm.addEventListener('click', cerrarConfirmacion);
+  elementos.btnCancelConfirm.addEventListener('click', cerrarConfirmacion);
+  elementos.btnConfirmSubmit.addEventListener('click', confirmarEnvio);
+  elementos.modalConfirm.addEventListener('click', (e) => {
+    if (e.target === elementos.modalConfirm) cerrarConfirmacion();
+  });
 
   // Notificaciones
   elementos.btnNotifications.addEventListener('click', abrirModalNotificaciones);
@@ -127,53 +157,73 @@ function inicializarEventos() {
     if (e.target === elementos.modalNotifications) cerrarModalNotificaciones();
   });
 
-  // Cerrar modal con ESC
+  // Cerrar modales con ESC
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && elementos.modalNotifications.classList.contains('active')) {
-      cerrarModalNotificaciones();
+    if (e.key === 'Escape') {
+      if (elementos.modalNotifications.classList.contains('active')) cerrarModalNotificaciones();
+      if (elementos.modalConfirm.classList.contains('active')) cerrarConfirmacion();
     }
   });
 }
 
 // ==========================================
-// 6. AUTENTICACIÓN
+// 6. AUTENTICACIÓN CON SUPABASE
 // ==========================================
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
 
-  const username = elementos.inputUsername.value.trim();
+  const email = elementos.inputEmail.value.trim();
   const password = elementos.inputPassword.value;
 
-  // Validar credenciales
-  const usuario = USUARIOS[username];
+  // Deshabilitar botón
+  elementos.btnLogin.disabled = true;
+  elementos.btnLogin.textContent = 'Iniciando...';
 
-  if (!usuario || usuario.password !== password) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    // Verificar si el usuario tiene rol asignado
+    const userRole = USER_ROLES[email.toLowerCase()];
+    if (!userRole) {
+      await supabase.auth.signOut();
+      throw new Error('Usuario no autorizado para este sistema');
+    }
+
+    // Login exitoso
+    estado.usuario = data.user;
+    estado.tipoUsuario = userRole.tipo;
+
+    mostrarDashboard(userRole);
+    agregarNotificacion('info', `Sesión iniciada como ${userRole.nombre}`);
+
+  } catch (error) {
+    console.error('Error de login:', error);
+    elementos.loginError.textContent = error.message || 'Credenciales incorrectas';
     elementos.loginError.classList.add('show');
     elementos.inputPassword.value = '';
     setTimeout(() => {
       elementos.loginError.classList.remove('show');
-    }, 3000);
-    return;
+    }, 4000);
+  } finally {
+    elementos.btnLogin.disabled = false;
+    elementos.btnLogin.textContent = 'Iniciar Sesión';
   }
-
-  // Login exitoso
-  estado.usuarioActivo = username;
-  estado.tipoUsuario = usuario.tipo;
-
-  // Guardar sesión
-  sessionStorage.setItem('erp_user', username);
-  sessionStorage.setItem('erp_tipo', usuario.tipo);
-
-  mostrarDashboard(usuario);
-  agregarNotificacion('info', `Sesión iniciada como ${usuario.nombre}`);
 }
 
-function handleLogout() {
-  estado.usuarioActivo = null;
-  estado.tipoUsuario = null;
+async function handleLogout() {
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error);
+  }
 
-  sessionStorage.removeItem('erp_user');
-  sessionStorage.removeItem('erp_tipo');
+  estado.usuario = null;
+  estado.tipoUsuario = null;
 
   // Mostrar login
   elementos.erpDashboard.style.display = 'none';
@@ -184,31 +234,38 @@ function handleLogout() {
   limpiarTodosLosFormularios();
 }
 
-function verificarSesion() {
-  const savedUser = sessionStorage.getItem('erp_user');
-  const savedTipo = sessionStorage.getItem('erp_tipo');
+async function verificarSesion() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
 
-  if (savedUser && USUARIOS[savedUser]) {
-    estado.usuarioActivo = savedUser;
-    estado.tipoUsuario = savedTipo;
-    mostrarDashboard(USUARIOS[savedUser]);
+    if (session && session.user) {
+      const userRole = USER_ROLES[session.user.email.toLowerCase()];
+      if (userRole) {
+        estado.usuario = session.user;
+        estado.tipoUsuario = userRole.tipo;
+        mostrarDashboard(userRole);
+        return;
+      }
+    }
+  } catch (error) {
+    console.error('Error al verificar sesión:', error);
   }
 }
 
 // ==========================================
 // 7. DASHBOARD
 // ==========================================
-function mostrarDashboard(usuario) {
+function mostrarDashboard(userRole) {
   // Ocultar login, mostrar dashboard
   elementos.loginSection.style.display = 'none';
   elementos.erpDashboard.style.display = 'block';
 
   // Actualizar header
-  elementos.userBadge.textContent = usuario.badge;
-  elementos.welcomeTitle.textContent = `Bienvenido, ${usuario.nombre}`;
+  elementos.userBadge.textContent = userRole.badge;
+  elementos.welcomeTitle.textContent = `Bienvenido, ${userRole.nombre}`;
 
   // Mostrar tabs correspondientes
-  if (usuario.tipo === 'rentacar') {
+  if (userRole.tipo === 'rentacar') {
     elementos.tabsRentacar.style.display = 'flex';
     elementos.tabsInterauto.style.display = 'none';
     elementos.welcomeSubtitle.textContent = 'Portal de ingesta de datos - Rent a Car';
@@ -235,15 +292,68 @@ function cambiarTab(tabId) {
       container.classList.toggle('active', id === tabId);
     }
   });
+
+  // Cargar registros correspondientes
+  cargarRegistrosSegunTab(tabId);
+}
+
+function cargarRegistrosSegunTab(tabId) {
+  switch (tabId) {
+    case 'rentacar-ingresos':
+      cargarRegistros('staging_rentacar_ingresos', 'list-rc-ingresos');
+      break;
+    case 'rentacar-cobranzas':
+      cargarRegistros('staging_rentacar_cobranzas', 'list-rc-cobranzas', true);
+      break;
+    case 'interauto-ventas':
+      cargarRegistros('staging_interauto_ventas', 'list-ia-ventas');
+      break;
+    case 'interauto-ingresos':
+      cargarRegistros('staging_interauto_ingresos', 'list-ia-ingresos');
+      break;
+  }
 }
 
 // ==========================================
-// 8. MANEJO DE FORMULARIOS
+// 8. CONFIRMACIÓN ANTES DE ENVIAR
 // ==========================================
-async function handleSubmit(e, tabla, tipoRegistro) {
+function abrirConfirmacion(e, tabla, tipoRegistro) {
   e.preventDefault();
 
+  // Validar formulario
   const form = e.target;
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  // Guardar datos para envío posterior
+  estado.formPendiente = form;
+  estado.tablaPendiente = tabla;
+  estado.tipoRegistroPendiente = tipoRegistro;
+
+  // Abrir modal
+  elementos.modalConfirm.classList.add('active');
+}
+
+function cerrarConfirmacion() {
+  elementos.modalConfirm.classList.remove('active');
+  estado.formPendiente = null;
+  estado.tablaPendiente = null;
+  estado.tipoRegistroPendiente = null;
+}
+
+async function confirmarEnvio() {
+  if (!estado.formPendiente) return;
+
+  cerrarConfirmacion();
+  await handleSubmit(estado.formPendiente, estado.tablaPendiente, estado.tipoRegistroPendiente);
+}
+
+// ==========================================
+// 9. MANEJO DE FORMULARIOS
+// ==========================================
+async function handleSubmit(form, tabla, tipoRegistro) {
   const submitBtn = form.querySelector('.btn-submit');
   const formData = new FormData(form);
 
@@ -260,18 +370,25 @@ async function handleSubmit(e, tabla, tipoRegistro) {
   const datos = {};
   formData.forEach((value, key) => {
     // Convertir números
-    if (['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd',
-         'cant_vehiculos', 'cant_camionetas', 'cant_suv', 'cant_fullsize'].includes(key)) {
+    if (['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'utilidad', 'monto_pendiente'].includes(key)) {
       datos[key] = parseFloat(value) || 0;
+    } else if (key === 'es_anticipo') {
+      datos[key] = value === 'on';
     } else {
       datos[key] = value;
     }
   });
 
+  // Manejar checkbox que no está marcado
+  if (!datos.hasOwnProperty('es_anticipo')) {
+    datos.es_anticipo = false;
+  }
+
   // Agregar metadatos
   datos.created_at = new Date().toISOString();
-  datos.created_by = estado.usuarioActivo;
+  datos.created_by = estado.usuario?.email || 'unknown';
   datos.status = 'pendiente';
+  datos.updated_at = new Date().toISOString();
 
   try {
     const { data, error } = await supabaseStaging
@@ -285,9 +402,17 @@ async function handleSubmit(e, tabla, tipoRegistro) {
     agregarNotificacion('success', `${tipoRegistro} guardado correctamente`);
     form.reset();
 
-    // Restaurar valores por defecto en selects
+    // Restaurar valores por defecto
     const selectAnio = form.querySelector('select[name="anio"]');
     if (selectAnio) selectAnio.value = '2025';
+
+    // Ocultar campo anticipo si existe
+    if (elementos.campoAnticipo) {
+      elementos.campoAnticipo.classList.remove('show');
+    }
+
+    // Recargar lista de registros
+    cargarRegistrosSegunTab(estado.tabActiva);
 
   } catch (error) {
     console.error('Error al guardar:', error);
@@ -313,7 +438,124 @@ function limpiarTodosLosFormularios() {
 }
 
 // ==========================================
-// 9. SISTEMA DE NOTIFICACIONES
+// 10. CARGAR LISTA DE REGISTROS
+// ==========================================
+window.cargarRegistros = async function(tabla, containerId, conPago = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '<div class="registros-empty">Cargando registros...</div>';
+
+  try {
+    const { data, error } = await supabaseStaging
+      .from(tabla)
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(15);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="registros-empty">No hay registros aún</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(registro => renderRegistro(registro, tabla, conPago)).join('');
+
+  } catch (error) {
+    console.error('Error al cargar registros:', error);
+    container.innerHTML = '<div class="registros-empty">Error al cargar registros</div>';
+  }
+};
+
+function renderRegistro(registro, tabla, conPago) {
+  let titulo = '';
+  let meta = '';
+
+  // Determinar título y meta según la tabla
+  switch (tabla) {
+    case 'staging_rentacar_ingresos':
+      titulo = registro.nombre_ingreso || `Ingreso ${registro.anio}-${registro.mes}`;
+      meta = `Bs ${formatNumber(registro.ingreso_bs)} | $${formatNumber(registro.ingreso_usd)}`;
+      break;
+    case 'staging_rentacar_cobranzas':
+      titulo = registro.cliente || 'Cliente';
+      meta = `${registro.locacion} | Bs ${formatNumber(registro.monto_bs)}`;
+      break;
+    case 'staging_interauto_ventas':
+      titulo = `${registro.marca} ${registro.modelo}`;
+      meta = `${registro.vendedor} | $${formatNumber(registro.precio_usd)}`;
+      break;
+    case 'staging_interauto_ingresos':
+      titulo = registro.nombre_factura || `Factura ${registro.numero_factura}`;
+      meta = `#${registro.numero_factura} | Bs ${formatNumber(registro.monto_bs)}`;
+      break;
+  }
+
+  const fechaCreacion = formatearFechaCorta(registro.created_at);
+  const fechaUpdate = registro.updated_at ? formatearFechaCorta(registro.updated_at) : fechaCreacion;
+  const statusClass = registro.pagado ? 'pagado' : registro.status;
+
+  let accionesHTML = '';
+  if (conPago && !registro.pagado) {
+    accionesHTML = `
+      <div class="registro-actions">
+        <button class="btn-marcar-pagado" onclick="marcarPagado('${tabla}', ${registro.id})">
+          Marcar Pagado
+        </button>
+      </div>
+    `;
+  } else if (conPago && registro.pagado) {
+    accionesHTML = `
+      <div class="registro-actions">
+        <span class="btn-marcar-pagado pagado">Pagado</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="registro-item">
+      <div class="registro-info">
+        <div class="registro-titulo">${titulo}</div>
+        <div class="registro-meta">
+          <span>${meta}</span>
+          <span>Creado: ${fechaCreacion}</span>
+          <span>Actualizado: ${fechaUpdate}</span>
+        </div>
+      </div>
+      <span class="registro-status ${statusClass}">${registro.pagado ? 'Pagado' : registro.status}</span>
+      ${accionesHTML}
+    </div>
+  `;
+}
+
+window.marcarPagado = async function(tabla, id) {
+  try {
+    const { error } = await supabaseStaging
+      .from(tabla)
+      .update({
+        pagado: true,
+        updated_at: new Date().toISOString(),
+        fecha_pago: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    mostrarToast('success', '¡Actualizado!', 'La deuda ha sido marcada como pagada');
+    agregarNotificacion('success', 'Deuda marcada como pagada');
+
+    // Recargar lista
+    cargarRegistros(tabla, 'list-rc-cobranzas', true);
+
+  } catch (error) {
+    console.error('Error al marcar pagado:', error);
+    mostrarToast('error', 'Error', 'No se pudo actualizar el registro');
+  }
+};
+
+// ==========================================
+// 11. SISTEMA DE NOTIFICACIONES
 // ==========================================
 function cargarNotificaciones() {
   const saved = localStorage.getItem('erp_notifications');
@@ -375,6 +617,59 @@ function renderizarNotificaciones() {
   `).join('');
 }
 
+function abrirModalNotificaciones() {
+  renderizarNotificaciones();
+  elementos.modalNotifications.classList.add('active');
+}
+
+function cerrarModalNotificaciones() {
+  elementos.modalNotifications.classList.remove('active');
+}
+
+function limpiarNotificaciones() {
+  estado.notificaciones = [];
+  guardarNotificaciones();
+  actualizarContadorNotificaciones();
+  renderizarNotificaciones();
+  mostrarToast('success', 'Notificaciones limpiadas', 'Se han eliminado todas las notificaciones');
+}
+
+// ==========================================
+// 12. SISTEMA DE TOASTS
+// ==========================================
+function mostrarToast(tipo, titulo, mensaje) {
+  const toast = document.createElement('div');
+  toast.className = `toast ${tipo}`;
+
+  const iconoSVG = tipo === 'success'
+    ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+  toast.innerHTML = `
+    <div class="toast-icon">${iconoSVG}</div>
+    <div class="toast-content">
+      <div class="toast-title">${titulo}</div>
+      <div class="toast-message">${mensaje}</div>
+    </div>
+  `;
+
+  elementos.toastContainer.appendChild(toast);
+
+  // Auto-eliminar después de 4 segundos
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 400);
+  }, 4000);
+}
+
+// ==========================================
+// 13. UTILIDADES
+// ==========================================
+function formatNumber(num) {
+  if (!num) return '0';
+  return new Intl.NumberFormat('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+}
+
 function formatearFecha(fechaISO) {
   const fecha = new Date(fechaISO);
   const ahora = new Date();
@@ -404,53 +699,18 @@ function formatearFecha(fechaISO) {
   });
 }
 
-function abrirModalNotificaciones() {
-  renderizarNotificaciones();
-  elementos.modalNotifications.classList.add('active');
-}
-
-function cerrarModalNotificaciones() {
-  elementos.modalNotifications.classList.remove('active');
-}
-
-function limpiarNotificaciones() {
-  estado.notificaciones = [];
-  guardarNotificaciones();
-  actualizarContadorNotificaciones();
-  renderizarNotificaciones();
-  mostrarToast('success', 'Notificaciones limpiadas', 'Se han eliminado todas las notificaciones');
+function formatearFechaCorta(fechaISO) {
+  if (!fechaISO) return '-';
+  const fecha = new Date(fechaISO);
+  return fecha.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
 }
 
 // ==========================================
-// 10. SISTEMA DE TOASTS
-// ==========================================
-function mostrarToast(tipo, titulo, mensaje) {
-  const toast = document.createElement('div');
-  toast.className = `toast ${tipo}`;
-
-  const iconoSVG = tipo === 'success'
-    ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-    : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-
-  toast.innerHTML = `
-    <div class="toast-icon">${iconoSVG}</div>
-    <div class="toast-content">
-      <div class="toast-title">${titulo}</div>
-      <div class="toast-message">${mensaje}</div>
-    </div>
-  `;
-
-  elementos.toastContainer.appendChild(toast);
-
-  // Auto-eliminar después de 4 segundos
-  setTimeout(() => {
-    toast.classList.add('hiding');
-    setTimeout(() => toast.remove(), 400);
-  }, 4000);
-}
-
-// ==========================================
-// 11. ESTILOS DINÁMICOS
+// 14. ESTILOS DINÁMICOS
 // ==========================================
 const style = document.createElement('style');
 style.textContent = `
