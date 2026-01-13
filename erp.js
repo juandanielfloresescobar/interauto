@@ -22,7 +22,7 @@ const supabaseStaging = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY,
 // ==========================================
 const USER_ROLES = {
   'rentacar@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
-  'interauto@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' }
+  'juan.flores@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' }
 };
 
 // ==========================================
