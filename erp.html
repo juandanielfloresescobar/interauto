@@ -1049,6 +1049,323 @@
         justify-content: center;
       }
     }
+
+    /* ========== ESTILOS LEADS ========== */
+    .leads-filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .leads-filter {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .leads-list {
+      max-height: 600px;
+    }
+
+    .lead-item {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .lead-notas {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.8rem;
+      font-style: italic;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .lead-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .lead-status-select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-width: 1px;
+      border-style: solid;
+    }
+
+    .lead-status-select option {
+      background: #1a1f2e;
+      color: #fff;
+    }
+
+    /* ========== ESTILOS STOCK JETOUR ========== */
+    .stock-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      max-height: none;
+    }
+
+    .stock-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .stock-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .stock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .stock-modelo {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .stock-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stock-detail {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+    }
+
+    .stock-detail span {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .stock-precios {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .stock-precio {
+      text-align: center;
+    }
+
+    .precio-label {
+      display: block;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .precio-valor {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .precio-venta {
+      color: #22c55e;
+    }
+
+    .precio-valor.positivo {
+      color: #22c55e;
+    }
+
+    .precio-valor.negativo {
+      color: #ef4444;
+    }
+
+    .stock-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .stock-status-select {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .stock-status-select:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .stock-status-select option {
+      background: #1a1f2e;
+      color: #fff;
+    }
+
+    /* ========== DASHBOARD JETOUR ========== */
+    .dashboard-content {
+      padding: 8px 0;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .dashboard-kpi {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .dashboard-kpi:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .dashboard-kpi.wide {
+      grid-column: span 2;
+    }
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon svg {
+      width: 24px;
+      height: 24px;
+      color: #fff;
+    }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kpi-value {
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .kpi-label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .dashboard-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-section-title {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .distribution-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .distribution-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.85rem;
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .bar-container {
+      flex: 1;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .bar-fill.ubicacion {
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    }
+
+    .bar-value {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: 40px;
+      text-align: right;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-kpi.wide {
+        grid-column: span 1;
+      }
+
+      .stock-list {
+        grid-template-columns: 1fr;
+      }
+
+      .stock-precios {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1150,6 +1467,41 @@
             <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
           <span>Ingresos Facturados</span>
+        </button>
+      </div>
+
+      <!-- ========== TABS LEADS ========== -->
+      <div id="tabs-leads" class="erp-tabs" style="display: none;">
+        <button class="erp-tab active" data-tab="leads-registro">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+          </svg>
+          <span>Nuevo Lead</span>
+        </button>
+        <button class="erp-tab" data-tab="leads-seguimiento">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Seguimiento de Leads</span>
+        </button>
+      </div>
+
+      <!-- ========== TABS JETOUR STOCK ========== -->
+      <div id="tabs-jetour" class="erp-tabs" style="display: none;">
+        <button class="erp-tab active" data-tab="jetour-stock">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/>
+            <circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>
+          </svg>
+          <span>Gestión de Stock</span>
+        </button>
+        <button class="erp-tab" data-tab="jetour-dashboard">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>Dashboard Ejecutivo</span>
         </button>
       </div>
 
@@ -1539,6 +1891,339 @@
             <div id="list-ia-ingresos" class="registros-list">
               <div class="registros-empty">Cargando registros...</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== FORMULARIOS LEADS ========== -->
+
+      <!-- Form: Nuevo Lead -->
+      <div id="form-leads-registro" class="erp-form-container">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="erp-card-title">Registrar Nuevo Lead</h2>
+              <p class="erp-card-subtitle">Ingrese información del lead calificado</p>
+            </div>
+          </div>
+
+          <form id="form-lead-registro">
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Nombre del Cliente <span class="required">*</span></label>
+                <input type="text" class="erp-input" name="nombre_cliente" placeholder="Nombre completo" required />
+              </div>
+              <div class="form-group-erp">
+                <label>Teléfono <span class="required">*</span></label>
+                <input type="tel" class="erp-input" name="telefono" placeholder="+591 7XXXXXXX" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Email</label>
+                <input type="email" class="erp-input" name="email" placeholder="correo@ejemplo.com" />
+              </div>
+              <div class="form-group-erp">
+                <label>Ciudad <span class="required">*</span></label>
+                <select class="erp-select" name="ciudad" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="Santa Cruz">Santa Cruz</option>
+                  <option value="La Paz">La Paz</option>
+                  <option value="Cochabamba">Cochabamba</option>
+                  <option value="Tarija">Tarija</option>
+                  <option value="Sucre">Sucre</option>
+                  <option value="Oruro">Oruro</option>
+                  <option value="Potosí">Potosí</option>
+                  <option value="Beni">Beni</option>
+                  <option value="Pando">Pando</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Marca de Interés <span class="required">*</span></label>
+                <select class="erp-select" name="marca_interes" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="Toyota">Toyota</option>
+                  <option value="Maxus">Maxus</option>
+                  <option value="BYD">BYD</option>
+                  <option value="Jetour">Jetour</option>
+                  <option value="Soueast">Soueast</option>
+                </select>
+              </div>
+              <div class="form-group-erp">
+                <label>Modelo de Interés</label>
+                <input type="text" class="erp-input" name="modelo_interes" placeholder="Ej: Hilux, T90, etc." />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Fuente del Lead <span class="required">*</span></label>
+                <select class="erp-select" name="fuente" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="pagina_web">Página Web</option>
+                  <option value="referido">Referido</option>
+                  <option value="showroom">Showroom</option>
+                  <option value="llamada_entrante">Llamada Entrante</option>
+                  <option value="feria">Feria/Evento</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+              <div class="form-group-erp">
+                <label>Estado Inicial <span class="required">*</span></label>
+                <select class="erp-select" name="estado_lead" required>
+                  <option value="pendiente_llamada">Pendiente para Llamada</option>
+                  <option value="contactado">Contactado</option>
+                  <option value="insistir">Insistir</option>
+                  <option value="en_proceso">En Proceso</option>
+                  <option value="cotizacion_enviada">Cotización Enviada</option>
+                  <option value="negociacion">Negociación</option>
+                  <option value="no_interesado">No Interesado</option>
+                  <option value="no_contesta">No Contesta</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Presupuesto Estimado (USD)</label>
+                <input type="number" class="erp-input" name="presupuesto" placeholder="0.00" step="0.01" min="0" />
+              </div>
+              <div class="form-group-erp">
+                <label>Fecha de Seguimiento</label>
+                <input type="date" class="erp-input" name="fecha_seguimiento" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Notas / Observaciones</label>
+                <textarea class="erp-textarea" name="notas" placeholder="Información adicional sobre el lead..."></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/>
+              </svg>
+              Guardar Lead
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Form: Seguimiento de Leads -->
+      <div id="form-leads-seguimiento" class="erp-form-container">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="erp-card-title">Seguimiento de Leads</h2>
+              <p class="erp-card-subtitle">Gestione el estado de sus leads</p>
+            </div>
+          </div>
+
+          <!-- Filtros -->
+          <div class="leads-filters">
+            <select class="erp-select leads-filter" id="filter-estado">
+              <option value="">Todos los Estados</option>
+              <option value="pendiente_llamada">Pendiente Llamada</option>
+              <option value="contactado">Contactado</option>
+              <option value="insistir">Insistir</option>
+              <option value="en_proceso">En Proceso</option>
+              <option value="cotizacion_enviada">Cotización Enviada</option>
+              <option value="negociacion">Negociación</option>
+              <option value="cerrado_ganado">Cerrado Ganado</option>
+              <option value="cerrado_perdido">Cerrado Perdido</option>
+              <option value="no_interesado">No Interesado</option>
+              <option value="no_contesta">No Contesta</option>
+            </select>
+            <button class="btn-refresh" onclick="cargarRegistrosLeads()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+              Actualizar
+            </button>
+          </div>
+
+          <!-- Lista de Leads -->
+          <div id="list-leads" class="registros-list leads-list">
+            <div class="registros-empty">Cargando leads...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== FORMULARIOS JETOUR STOCK ========== -->
+
+      <!-- Form: Gestión de Stock -->
+      <div id="form-jetour-stock" class="erp-form-container">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/>
+                <circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="erp-card-title">Agregar Vehículo al Stock</h2>
+              <p class="erp-card-subtitle">Registre un nuevo vehículo Jetour</p>
+            </div>
+          </div>
+
+          <form id="form-jetour-nuevo">
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Modelo <span class="required">*</span></label>
+                <select class="erp-select" name="modelo" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="Jetour T2">Jetour T2</option>
+                  <option value="Jetour X70">Jetour X70</option>
+                  <option value="Jetour X70 Plus">Jetour X70 Plus</option>
+                  <option value="Jetour X90">Jetour X90</option>
+                  <option value="Jetour X90 Plus">Jetour X90 Plus</option>
+                  <option value="Jetour Dashing">Jetour Dashing</option>
+                  <option value="Jetour T1">Jetour T1</option>
+                </select>
+              </div>
+              <div class="form-group-erp">
+                <label>Año <span class="required">*</span></label>
+                <select class="erp-select" name="anio" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="2024">2024</option>
+                  <option value="2025" selected>2025</option>
+                  <option value="2026">2026</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>VIN (Número de Chasis) <span class="required">*</span></label>
+                <input type="text" class="erp-input" name="vin" placeholder="Ej: LVTDB21B7N1234567" required maxlength="17" />
+              </div>
+              <div class="form-group-erp">
+                <label>Color <span class="required">*</span></label>
+                <select class="erp-select" name="color" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="Blanco">Blanco</option>
+                  <option value="Negro">Negro</option>
+                  <option value="Gris">Gris</option>
+                  <option value="Plata">Plata</option>
+                  <option value="Rojo">Rojo</option>
+                  <option value="Azul">Azul</option>
+                  <option value="Verde">Verde</option>
+                  <option value="Dorado">Dorado</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row form-row-3">
+              <div class="form-group-erp">
+                <label>Precio Costo (USD) <span class="required">*</span></label>
+                <input type="number" class="erp-input" name="precio_costo" placeholder="0.00" step="0.01" min="0" required />
+              </div>
+              <div class="form-group-erp">
+                <label>Precio Venta (USD) <span class="required">*</span></label>
+                <input type="number" class="erp-input" name="precio_venta" placeholder="0.00" step="0.01" min="0" required />
+              </div>
+              <div class="form-group-erp">
+                <label>Margen Calculado</label>
+                <input type="text" class="erp-input" id="margen-calculado" placeholder="--%" readonly style="background: rgba(255,255,255,0.02);" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Ubicación <span class="required">*</span></label>
+                <select class="erp-select" name="ubicacion" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="Showroom Santa Cruz">Showroom Santa Cruz</option>
+                  <option value="Showroom La Paz">Showroom La Paz</option>
+                  <option value="Showroom Cochabamba">Showroom Cochabamba</option>
+                  <option value="Almacén Central">Almacén Central</option>
+                  <option value="En Puerto">En Puerto</option>
+                  <option value="En Tránsito Marítimo">En Tránsito Marítimo</option>
+                  <option value="En Tránsito Terrestre">En Tránsito Terrestre</option>
+                </select>
+              </div>
+              <div class="form-group-erp">
+                <label>Estado <span class="required">*</span></label>
+                <select class="erp-select" name="estado" required>
+                  <option value="disponible">Disponible</option>
+                  <option value="reservado">Reservado</option>
+                  <option value="en_transito">En Tránsito</option>
+                  <option value="vendido">Vendido</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Observaciones</label>
+                <textarea class="erp-textarea" name="observaciones" placeholder="Notas adicionales sobre el vehículo..."></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/>
+              </svg>
+              Agregar al Stock
+            </button>
+          </form>
+
+          <!-- Lista de Stock -->
+          <div class="registros-section">
+            <div class="registros-header">
+              <h3 class="registros-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                Stock Actual
+              </h3>
+              <button class="btn-refresh" onclick="cargarRegistrosStock()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                Actualizar
+              </button>
+            </div>
+            <div id="list-jetour-stock" class="stock-list">
+              <div class="registros-empty">Cargando stock...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form: Dashboard Ejecutivo -->
+      <div id="form-jetour-dashboard" class="erp-form-container">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="erp-card-title">Dashboard Ejecutivo</h2>
+              <p class="erp-card-subtitle">Visión general del stock Jetour</p>
+            </div>
+          </div>
+
+          <div id="jetour-dashboard-content" class="dashboard-content">
+            <div class="registros-empty">Cargando dashboard...</div>
           </div>
         </div>
       </div>
