@@ -25,8 +25,8 @@ const USER_ROLES = {
   'daniela.eguez@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO', permisos: ['ver', 'crear', 'editar'] },
   'yngrid.numbela@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] },
   'diego.zapata@groupsaa.com': { tipo: 'ejecutivo_leads', nombre: 'Ejecutivo de Leads', badge: 'EJECUTIVO', permisos: ['ver', 'crear', 'editar'] },
-  'juan.flores@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR', permisos: ['ver', 'crear', 'editar'] }
-  'german.decebal@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] },
+  'juan.flores@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR', permisos: ['ver', 'crear', 'editar'] },
+  'german.decebal@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] }
 };
 
 // ==========================================
