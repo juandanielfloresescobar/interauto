@@ -21,8 +21,10 @@ const supabaseStaging = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY,
 // 2. MAPEO DE USUARIOS A TIPO
 // ==========================================
 const USER_ROLES = {
-  'pablo.toro@saavrentacar.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
-  'daniela.eguez@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' }
+  'rentacar@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
+  'interauto@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' },
+  'leads@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS' },
+  'jetour@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR' }
 };
 
 // ==========================================
@@ -72,13 +74,19 @@ function inicializarElementos() {
   // Tabs
   elementos.tabsRentacar = document.getElementById('tabs-rentacar');
   elementos.tabsInterauto = document.getElementById('tabs-interauto');
+  elementos.tabsLeads = document.getElementById('tabs-leads');
+  elementos.tabsJetour = document.getElementById('tabs-jetour');
 
   // Formularios
   elementos.formContainers = {
     'rentacar-ingresos': document.getElementById('form-rentacar-ingresos'),
     'rentacar-cobranzas': document.getElementById('form-rentacar-cobranzas'),
     'interauto-ventas': document.getElementById('form-interauto-ventas'),
-    'interauto-ingresos': document.getElementById('form-interauto-ingresos')
+    'interauto-ingresos': document.getElementById('form-interauto-ingresos'),
+    'leads-registro': document.getElementById('form-leads-registro'),
+    'leads-seguimiento': document.getElementById('form-leads-seguimiento'),
+    'jetour-stock': document.getElementById('form-jetour-stock'),
+    'jetour-dashboard': document.getElementById('form-jetour-dashboard')
   };
 
   // Forms
@@ -86,6 +94,8 @@ function inicializarElementos() {
   elementos.formRcCobranzas = document.getElementById('form-rc-cobranzas');
   elementos.formIaVentas = document.getElementById('form-ia-ventas');
   elementos.formIaIngresos = document.getElementById('form-ia-ingresos');
+  elementos.formLeadsRegistro = document.getElementById('form-lead-registro');
+  elementos.formJetourStock = document.getElementById('form-jetour-nuevo');
 
   // Checkbox anticipo
   elementos.checkAnticipo = document.getElementById('check-anticipo');
@@ -126,6 +136,36 @@ function inicializarEventos() {
   elementos.formRcCobranzas.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_rentacar_cobranzas', 'Cuenta por Cobrar'));
   elementos.formIaVentas.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_interauto_ventas', 'Venta Interauto'));
   elementos.formIaIngresos.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_interauto_ingresos', 'Ingreso Facturado'));
+
+  // Leads y Jetour forms
+  if (elementos.formLeadsRegistro) {
+    elementos.formLeadsRegistro.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_leads', 'Lead'));
+  }
+  if (elementos.formJetourStock) {
+    elementos.formJetourStock.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_jetour_stock', 'Stock Jetour'));
+
+    // Calcular margen automáticamente
+    const precioCosto = elementos.formJetourStock.querySelector('input[name="precio_costo"]');
+    const precioVenta = elementos.formJetourStock.querySelector('input[name="precio_venta"]');
+    const margenCalculado = document.getElementById('margen-calculado');
+
+    const calcularMargen = () => {
+      const costo = parseFloat(precioCosto.value) || 0;
+      const venta = parseFloat(precioVenta.value) || 0;
+      if (costo > 0 && venta > 0) {
+        const margen = ((venta - costo) / costo * 100).toFixed(1);
+        const utilidad = (venta - costo).toFixed(2);
+        margenCalculado.value = `${margen}% ($${utilidad})`;
+        margenCalculado.style.color = margen > 0 ? '#22c55e' : '#ef4444';
+      } else {
+        margenCalculado.value = '--%';
+        margenCalculado.style.color = 'rgba(255,255,255,0.5)';
+      }
+    };
+
+    precioCosto.addEventListener('input', calcularMargen);
+    precioVenta.addEventListener('input', calcularMargen);
+  }
 
   // Checkbox anticipo
   if (elementos.checkAnticipo) {
@@ -264,17 +304,34 @@ function mostrarDashboard(userRole) {
   elementos.userBadge.textContent = userRole.badge;
   elementos.welcomeTitle.textContent = `Bienvenido, ${userRole.nombre}`;
 
-  // Mostrar tabs correspondientes
-  if (userRole.tipo === 'rentacar') {
-    elementos.tabsRentacar.style.display = 'flex';
-    elementos.tabsInterauto.style.display = 'none';
-    elementos.welcomeSubtitle.textContent = 'Portal de ingesta de datos - Rent a Car';
-    cambiarTab('rentacar-ingresos');
-  } else {
-    elementos.tabsRentacar.style.display = 'none';
-    elementos.tabsInterauto.style.display = 'flex';
-    elementos.welcomeSubtitle.textContent = 'Portal de ingesta de datos - Interauto';
-    cambiarTab('interauto-ventas');
+  // Ocultar todos los tabs primero
+  elementos.tabsRentacar.style.display = 'none';
+  elementos.tabsInterauto.style.display = 'none';
+  if (elementos.tabsLeads) elementos.tabsLeads.style.display = 'none';
+  if (elementos.tabsJetour) elementos.tabsJetour.style.display = 'none';
+
+  // Mostrar tabs correspondientes según tipo de usuario
+  switch (userRole.tipo) {
+    case 'rentacar':
+      elementos.tabsRentacar.style.display = 'flex';
+      elementos.welcomeSubtitle.textContent = 'Portal de ingesta de datos - Rent a Car';
+      cambiarTab('rentacar-ingresos');
+      break;
+    case 'interauto':
+      elementos.tabsInterauto.style.display = 'flex';
+      elementos.welcomeSubtitle.textContent = 'Portal de ingesta de datos - Interauto';
+      cambiarTab('interauto-ventas');
+      break;
+    case 'leads':
+      if (elementos.tabsLeads) elementos.tabsLeads.style.display = 'flex';
+      elementos.welcomeSubtitle.textContent = 'Gestión de Leads Calificados';
+      cambiarTab('leads-registro');
+      break;
+    case 'jetour':
+      if (elementos.tabsJetour) elementos.tabsJetour.style.display = 'flex';
+      elementos.welcomeSubtitle.textContent = 'Gestión de Stock Jetour';
+      cambiarTab('jetour-stock');
+      break;
   }
 }
 
@@ -310,6 +367,16 @@ function cargarRegistrosSegunTab(tabId) {
       break;
     case 'interauto-ingresos':
       cargarRegistros('staging_interauto_ingresos', 'list-ia-ingresos');
+      break;
+    case 'leads-registro':
+    case 'leads-seguimiento':
+      cargarRegistrosLeads();
+      break;
+    case 'jetour-stock':
+      cargarRegistrosStock();
+      break;
+    case 'jetour-dashboard':
+      cargarDashboardJetour();
       break;
   }
 }
@@ -489,6 +556,14 @@ function renderRegistro(registro, tabla, conPago) {
     case 'staging_interauto_ingresos':
       titulo = registro.nombre_factura || `Factura ${registro.numero_factura}`;
       meta = `#${registro.numero_factura} | Bs ${formatNumber(registro.monto_bs)}`;
+      break;
+    case 'staging_leads':
+      titulo = registro.nombre_cliente || 'Lead';
+      meta = `${registro.telefono || '-'} | ${registro.marca_interes || '-'}`;
+      break;
+    case 'staging_jetour_stock':
+      titulo = `${registro.modelo} - ${registro.color || 'N/A'}`;
+      meta = `VIN: ${registro.vin || '-'} | $${formatNumber(registro.precio_venta)}`;
       break;
   }
 
@@ -710,7 +785,413 @@ function formatearFechaCorta(fechaISO) {
 }
 
 // ==========================================
-// 14. ESTILOS DINÁMICOS
+// 14. FUNCIONES LEADS
+// ==========================================
+async function cargarRegistrosLeads() {
+  const container = document.getElementById('list-leads');
+  if (!container) return;
+
+  container.innerHTML = '<div class="registros-empty">Cargando leads...</div>';
+
+  try {
+    const { data, error } = await supabaseStaging
+      .from('staging_leads')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="registros-empty">No hay leads registrados</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(lead => renderLead(lead)).join('');
+
+  } catch (error) {
+    console.error('Error al cargar leads:', error);
+    container.innerHTML = '<div class="registros-empty">Error al cargar leads</div>';
+  }
+}
+
+function renderLead(lead) {
+  const statusColors = {
+    'pendiente_llamada': { bg: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', label: 'Pendiente Llamada' },
+    'contactado': { bg: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', label: 'Contactado' },
+    'insistir': { bg: 'rgba(249, 115, 22, 0.2)', color: '#f97316', label: 'Insistir' },
+    'en_proceso': { bg: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6', label: 'En Proceso' },
+    'cotizacion_enviada': { bg: 'rgba(14, 165, 233, 0.2)', color: '#0ea5e9', label: 'Cotización Enviada' },
+    'negociacion': { bg: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', label: 'Negociación' },
+    'cerrado_ganado': { bg: 'rgba(34, 197, 94, 0.2)', color: '#22c55e', label: 'Cerrado Ganado' },
+    'cerrado_perdido': { bg: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', label: 'Cerrado Perdido' },
+    'no_interesado': { bg: 'rgba(107, 114, 128, 0.2)', color: '#6b7280', label: 'No Interesado' },
+    'no_contesta': { bg: 'rgba(156, 163, 175, 0.2)', color: '#9ca3af', label: 'No Contesta' }
+  };
+
+  const statusInfo = statusColors[lead.estado_lead] || statusColors['pendiente_llamada'];
+  const fechaCreacion = formatearFechaCorta(lead.created_at);
+
+  return `
+    <div class="registro-item lead-item">
+      <div class="registro-info">
+        <div class="registro-titulo">${lead.nombre_cliente || 'Sin nombre'}</div>
+        <div class="registro-meta">
+          <span>${lead.telefono || '-'}</span>
+          <span>${lead.email || '-'}</span>
+          <span>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
+          <span>Creado: ${fechaCreacion}</span>
+        </div>
+        ${lead.notas ? `<div class="lead-notas">${lead.notas}</div>` : ''}
+      </div>
+      <div class="lead-actions">
+        <select class="lead-status-select" onchange="actualizarEstadoLead(${lead.id}, this.value)" style="background: ${statusInfo.bg}; color: ${statusInfo.color}; border-color: ${statusInfo.color};">
+          <option value="pendiente_llamada" ${lead.estado_lead === 'pendiente_llamada' ? 'selected' : ''}>Pendiente Llamada</option>
+          <option value="contactado" ${lead.estado_lead === 'contactado' ? 'selected' : ''}>Contactado</option>
+          <option value="insistir" ${lead.estado_lead === 'insistir' ? 'selected' : ''}>Insistir</option>
+          <option value="en_proceso" ${lead.estado_lead === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
+          <option value="cotizacion_enviada" ${lead.estado_lead === 'cotizacion_enviada' ? 'selected' : ''}>Cotización Enviada</option>
+          <option value="negociacion" ${lead.estado_lead === 'negociacion' ? 'selected' : ''}>Negociación</option>
+          <option value="cerrado_ganado" ${lead.estado_lead === 'cerrado_ganado' ? 'selected' : ''}>Cerrado Ganado</option>
+          <option value="cerrado_perdido" ${lead.estado_lead === 'cerrado_perdido' ? 'selected' : ''}>Cerrado Perdido</option>
+          <option value="no_interesado" ${lead.estado_lead === 'no_interesado' ? 'selected' : ''}>No Interesado</option>
+          <option value="no_contesta" ${lead.estado_lead === 'no_contesta' ? 'selected' : ''}>No Contesta</option>
+        </select>
+      </div>
+    </div>
+  `;
+}
+
+window.actualizarEstadoLead = async function(id, nuevoEstado) {
+  try {
+    const { error } = await supabaseStaging
+      .from('staging_leads')
+      .update({
+        estado_lead: nuevoEstado,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    mostrarToast('success', '¡Actualizado!', 'Estado del lead actualizado');
+    agregarNotificacion('success', `Estado del lead actualizado a: ${nuevoEstado}`);
+
+  } catch (error) {
+    console.error('Error al actualizar lead:', error);
+    mostrarToast('error', 'Error', 'No se pudo actualizar el lead');
+    cargarRegistrosLeads(); // Recargar para restaurar estado anterior
+  }
+};
+
+// ==========================================
+// 15. FUNCIONES STOCK JETOUR
+// ==========================================
+async function cargarRegistrosStock() {
+  const container = document.getElementById('list-jetour-stock');
+  if (!container) return;
+
+  container.innerHTML = '<div class="registros-empty">Cargando stock...</div>';
+
+  try {
+    const { data, error } = await supabaseStaging
+      .from('staging_jetour_stock')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="registros-empty">No hay vehículos en stock</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(item => renderStockItem(item)).join('');
+
+  } catch (error) {
+    console.error('Error al cargar stock:', error);
+    container.innerHTML = '<div class="registros-empty">Error al cargar stock</div>';
+  }
+}
+
+function renderStockItem(item) {
+  const statusColors = {
+    'disponible': { bg: 'rgba(34, 197, 94, 0.2)', color: '#22c55e' },
+    'reservado': { bg: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' },
+    'vendido': { bg: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' },
+    'en_transito': { bg: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6' }
+  };
+
+  const statusInfo = statusColors[item.estado] || statusColors['disponible'];
+  const margen = item.precio_venta && item.precio_costo ?
+    ((item.precio_venta - item.precio_costo) / item.precio_costo * 100).toFixed(1) : 0;
+  const utilidad = item.precio_venta && item.precio_costo ?
+    (item.precio_venta - item.precio_costo) : 0;
+
+  return `
+    <div class="stock-item">
+      <div class="stock-header">
+        <div class="stock-modelo">${item.modelo || 'N/A'}</div>
+        <span class="registro-status" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${item.estado || 'disponible'}</span>
+      </div>
+      <div class="stock-details">
+        <div class="stock-detail"><span>VIN:</span> ${item.vin || '-'}</div>
+        <div class="stock-detail"><span>Color:</span> ${item.color || '-'}</div>
+        <div class="stock-detail"><span>Año:</span> ${item.anio || '-'}</div>
+        <div class="stock-detail"><span>Ubicación:</span> ${item.ubicacion || '-'}</div>
+      </div>
+      <div class="stock-precios">
+        <div class="stock-precio">
+          <span class="precio-label">Costo</span>
+          <span class="precio-valor">$${formatNumber(item.precio_costo)}</span>
+        </div>
+        <div class="stock-precio">
+          <span class="precio-label">Venta</span>
+          <span class="precio-valor precio-venta">$${formatNumber(item.precio_venta)}</span>
+        </div>
+        <div class="stock-precio">
+          <span class="precio-label">Utilidad</span>
+          <span class="precio-valor ${utilidad > 0 ? 'positivo' : 'negativo'}">$${formatNumber(utilidad)}</span>
+        </div>
+        <div class="stock-precio">
+          <span class="precio-label">Margen</span>
+          <span class="precio-valor ${margen > 0 ? 'positivo' : 'negativo'}">${margen}%</span>
+        </div>
+      </div>
+      <div class="stock-actions">
+        <select class="stock-status-select" onchange="actualizarEstadoStock(${item.id}, this.value)">
+          <option value="disponible" ${item.estado === 'disponible' ? 'selected' : ''}>Disponible</option>
+          <option value="reservado" ${item.estado === 'reservado' ? 'selected' : ''}>Reservado</option>
+          <option value="en_transito" ${item.estado === 'en_transito' ? 'selected' : ''}>En Tránsito</option>
+          <option value="vendido" ${item.estado === 'vendido' ? 'selected' : ''}>Vendido</option>
+        </select>
+      </div>
+    </div>
+  `;
+}
+
+window.actualizarEstadoStock = async function(id, nuevoEstado) {
+  try {
+    const { error } = await supabaseStaging
+      .from('staging_jetour_stock')
+      .update({
+        estado: nuevoEstado,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    mostrarToast('success', '¡Actualizado!', 'Estado del vehículo actualizado');
+    cargarRegistrosStock();
+    cargarDashboardJetour();
+
+  } catch (error) {
+    console.error('Error al actualizar stock:', error);
+    mostrarToast('error', 'Error', 'No se pudo actualizar el vehículo');
+  }
+};
+
+// ==========================================
+// 16. DASHBOARD JETOUR
+// ==========================================
+async function cargarDashboardJetour() {
+  const dashboardContainer = document.getElementById('jetour-dashboard-content');
+  if (!dashboardContainer) return;
+
+  try {
+    const { data, error } = await supabaseStaging
+      .from('staging_jetour_stock')
+      .select('*');
+
+    if (error) throw error;
+
+    const stats = calcularEstadisticasStock(data || []);
+    renderDashboard(dashboardContainer, stats);
+
+  } catch (error) {
+    console.error('Error al cargar dashboard:', error);
+    dashboardContainer.innerHTML = '<div class="registros-empty">Error al cargar datos</div>';
+  }
+}
+
+function calcularEstadisticasStock(data) {
+  const stats = {
+    total: data.length,
+    disponibles: data.filter(d => d.estado === 'disponible').length,
+    reservados: data.filter(d => d.estado === 'reservado').length,
+    vendidos: data.filter(d => d.estado === 'vendido').length,
+    enTransito: data.filter(d => d.estado === 'en_transito').length,
+    valorTotalCosto: data.reduce((sum, d) => sum + (parseFloat(d.precio_costo) || 0), 0),
+    valorTotalVenta: data.reduce((sum, d) => sum + (parseFloat(d.precio_venta) || 0), 0),
+    utilidadPotencial: 0,
+    margenPromedio: 0,
+    porModelo: {},
+    porUbicacion: {},
+    porColor: {}
+  };
+
+  // Calcular utilidad potencial (solo disponibles)
+  const disponibles = data.filter(d => d.estado === 'disponible');
+  stats.utilidadPotencial = disponibles.reduce((sum, d) => {
+    return sum + ((parseFloat(d.precio_venta) || 0) - (parseFloat(d.precio_costo) || 0));
+  }, 0);
+
+  // Margen promedio
+  if (data.length > 0) {
+    const margenes = data.map(d => {
+      if (d.precio_costo && d.precio_venta) {
+        return ((d.precio_venta - d.precio_costo) / d.precio_costo) * 100;
+      }
+      return 0;
+    });
+    stats.margenPromedio = margenes.reduce((a, b) => a + b, 0) / margenes.length;
+  }
+
+  // Agrupar por modelo
+  data.forEach(d => {
+    const modelo = d.modelo || 'Sin modelo';
+    stats.porModelo[modelo] = (stats.porModelo[modelo] || 0) + 1;
+  });
+
+  // Agrupar por ubicación
+  data.forEach(d => {
+    const ubicacion = d.ubicacion || 'Sin ubicación';
+    stats.porUbicacion[ubicacion] = (stats.porUbicacion[ubicacion] || 0) + 1;
+  });
+
+  // Agrupar por color
+  data.forEach(d => {
+    const color = d.color || 'Sin color';
+    stats.porColor[color] = (stats.porColor[color] || 0) + 1;
+  });
+
+  return stats;
+}
+
+function renderDashboard(container, stats) {
+  container.innerHTML = `
+    <div class="dashboard-grid">
+      <!-- KPIs principales -->
+      <div class="dashboard-kpi">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">${stats.total}</span>
+          <span class="kpi-label">Total Vehículos</span>
+        </div>
+      </div>
+
+      <div class="dashboard-kpi">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">${stats.disponibles}</span>
+          <span class="kpi-label">Disponibles</span>
+        </div>
+      </div>
+
+      <div class="dashboard-kpi">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">${stats.reservados}</span>
+          <span class="kpi-label">Reservados</span>
+        </div>
+      </div>
+
+      <div class="dashboard-kpi">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">${stats.enTransito}</span>
+          <span class="kpi-label">En Tránsito</span>
+        </div>
+      </div>
+
+      <!-- KPIs financieros -->
+      <div class="dashboard-kpi wide">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, var(--primary), var(--accent));">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">$${formatNumber(stats.valorTotalCosto)}</span>
+          <span class="kpi-label">Valor Costo Total</span>
+        </div>
+      </div>
+
+      <div class="dashboard-kpi wide">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">$${formatNumber(stats.valorTotalVenta)}</span>
+          <span class="kpi-label">Valor Venta Total</span>
+        </div>
+      </div>
+
+      <div class="dashboard-kpi">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">$${formatNumber(stats.utilidadPotencial)}</span>
+          <span class="kpi-label">Utilidad Potencial</span>
+        </div>
+      </div>
+
+      <div class="dashboard-kpi">
+        <div class="kpi-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-value">${stats.margenPromedio.toFixed(1)}%</span>
+          <span class="kpi-label">Margen Promedio</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución por modelo -->
+    <div class="dashboard-section">
+      <h3 class="dashboard-section-title">Distribución por Modelo</h3>
+      <div class="distribution-bars">
+        ${Object.entries(stats.porModelo).map(([modelo, count]) => `
+          <div class="distribution-bar-item">
+            <span class="bar-label">${modelo}</span>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: ${(count / stats.total * 100)}%;"></div>
+            </div>
+            <span class="bar-value">${count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Distribución por ubicación -->
+    <div class="dashboard-section">
+      <h3 class="dashboard-section-title">Distribución por Ubicación</h3>
+      <div class="distribution-bars">
+        ${Object.entries(stats.porUbicacion).map(([ubicacion, count]) => `
+          <div class="distribution-bar-item">
+            <span class="bar-label">${ubicacion}</span>
+            <div class="bar-container">
+              <div class="bar-fill ubicacion" style="width: ${(count / stats.total * 100)}%;"></div>
+            </div>
+            <span class="bar-value">${count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================
+// 17. ESTILOS DINÁMICOS
 // ==========================================
 const style = document.createElement('style');
 style.textContent = `
