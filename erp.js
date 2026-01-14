@@ -95,6 +95,7 @@ function inicializarElementos() {
   // Forms
   elementos.formRcIngresos = document.getElementById('form-rc-ingresos');
   elementos.formRcCobranzas = document.getElementById('form-rc-cobranzas');
+  elementos.formRcFlota = document.getElementById('form-rc-flota');
   elementos.formIaVentas = document.getElementById('form-ia-ventas');
   elementos.formIaIngresos = document.getElementById('form-ia-ingresos');
   elementos.formLeadsRegistro = document.getElementById('form-lead-registro');
@@ -137,6 +138,9 @@ function inicializarEventos() {
   // Formularios - abrir modal de confirmación
   elementos.formRcIngresos.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_rentacar_ingresos', 'Ingresos Rent a Car'));
   elementos.formRcCobranzas.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_rentacar_cobranzas', 'Cuenta por Cobrar'));
+  if (elementos.formRcFlota) {
+    elementos.formRcFlota.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_rentacar_flota', 'Flota Mensual'));
+  }
   elementos.formIaVentas.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_interauto_ventas', 'Venta Interauto'));
   elementos.formIaIngresos.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_interauto_ingresos', 'Ingreso Facturado'));
 
@@ -1468,6 +1472,10 @@ function renderFlotaMensual(item) {
   const meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const mesNombre = meses[parseInt(item.mes)] || item.mes;
 
+  const operativos = (item.automoviles || 0) + (item.camionetas || 0) + (item.suv || 0) + (item.utilitarios || 0);
+  const noDisponibles = (item.sin_mantenimiento || 0) + (item.accidentados || 0);
+  const total = operativos + noDisponibles;
+
   return `
     <div class="flota-item">
       <div class="flota-header">
@@ -1476,8 +1484,8 @@ function renderFlotaMensual(item) {
       </div>
       <div class="flota-categorias">
         <div class="flota-cat">
-          <span class="cat-label">Vehículos</span>
-          <span class="cat-valor">${item.vehiculos || 0}</span>
+          <span class="cat-label">Automóviles</span>
+          <span class="cat-valor">${item.automoviles || 0}</span>
         </div>
         <div class="flota-cat">
           <span class="cat-label">Camionetas</span>
@@ -1488,12 +1496,24 @@ function renderFlotaMensual(item) {
           <span class="cat-valor">${item.suv || 0}</span>
         </div>
         <div class="flota-cat">
-          <span class="cat-label">Full Size</span>
-          <span class="cat-valor">${item.fullsize || 0}</span>
+          <span class="cat-label">Utilitarios</span>
+          <span class="cat-valor">${item.utilitarios || 0}</span>
+        </div>
+      </div>
+      <div class="flota-categorias" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+        <div class="flota-cat no-disponible">
+          <span class="cat-label">Sin Mantenimiento</span>
+          <span class="cat-valor" style="color: #fbbf24;">${item.sin_mantenimiento || 0}</span>
+        </div>
+        <div class="flota-cat no-disponible">
+          <span class="cat-label">Accidentados</span>
+          <span class="cat-valor" style="color: #ef4444;">${item.accidentados || 0}</span>
         </div>
       </div>
       <div class="flota-total">
-        Total: <strong>${(item.vehiculos || 0) + (item.camionetas || 0) + (item.suv || 0) + (item.fullsize || 0)}</strong> unidades
+        <span>Operativos: <strong>${operativos}</strong></span>
+        <span style="margin-left: 16px; color: rgba(255,255,255,0.6);">No disponibles: <strong>${noDisponibles}</strong></span>
+        <span style="margin-left: 16px;">Total: <strong>${total}</strong> unidades</span>
       </div>
     </div>
   `;
