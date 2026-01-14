@@ -21,10 +21,11 @@ const supabaseStaging = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY,
 // 2. MAPEO DE USUARIOS A TIPO
 // ==========================================
 const USER_ROLES = {
-  'rentacar@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR' },
-  'interauto@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO' },
-  'leads@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS' },
-  'jetour@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR' }
+  'rentacar@groupsaa.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR', permisos: ['ver', 'crear', 'editar'] },
+  'interauto@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO', permisos: ['ver', 'crear', 'editar'] },
+  'leads@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] },
+  'ejecutivo_leads@groupsaa.com': { tipo: 'ejecutivo_leads', nombre: 'Ejecutivo de Leads', badge: 'EJECUTIVO', permisos: ['ver', 'crear', 'editar'] },
+  'jetour@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR', permisos: ['ver', 'crear', 'editar'] }
 };
 
 // ==========================================
@@ -81,6 +82,7 @@ function inicializarElementos() {
   elementos.formContainers = {
     'rentacar-ingresos': document.getElementById('form-rentacar-ingresos'),
     'rentacar-cobranzas': document.getElementById('form-rentacar-cobranzas'),
+    'rentacar-flota': document.getElementById('form-rentacar-flota'),
     'interauto-ventas': document.getElementById('form-interauto-ventas'),
     'interauto-ingresos': document.getElementById('form-interauto-ingresos'),
     'leads-registro': document.getElementById('form-leads-registro'),
@@ -300,6 +302,9 @@ function mostrarDashboard(userRole) {
   elementos.loginSection.style.display = 'none';
   elementos.erpDashboard.style.display = 'block';
 
+  // Cargar notificaciones específicas del usuario
+  cargarNotificaciones();
+
   // Actualizar header
   elementos.userBadge.textContent = userRole.badge;
   elementos.welcomeTitle.textContent = `Bienvenido, ${userRole.nombre}`;
@@ -323,6 +328,13 @@ function mostrarDashboard(userRole) {
       cambiarTab('interauto-ventas');
       break;
     case 'leads':
+      // Solo puede ver, no editar
+      if (elementos.tabsLeads) elementos.tabsLeads.style.display = 'flex';
+      elementos.welcomeSubtitle.textContent = 'Gestión de Leads - Solo Visualización';
+      cambiarTab('leads-seguimiento');
+      break;
+    case 'ejecutivo_leads':
+      // Puede ver y editar leads
       if (elementos.tabsLeads) elementos.tabsLeads.style.display = 'flex';
       elementos.welcomeSubtitle.textContent = 'Gestión de Leads Calificados';
       cambiarTab('leads-registro');
@@ -361,6 +373,9 @@ function cargarRegistrosSegunTab(tabId) {
       break;
     case 'rentacar-cobranzas':
       cargarRegistros('staging_rentacar_cobranzas', 'list-rc-cobranzas', true);
+      break;
+    case 'rentacar-flota':
+      cargarFlotaMensual();
       break;
     case 'interauto-ventas':
       cargarRegistros('staging_interauto_ventas', 'list-ia-ventas');
@@ -630,18 +645,26 @@ window.marcarPagado = async function(tabla, id) {
 };
 
 // ==========================================
-// 11. SISTEMA DE NOTIFICACIONES
+// 11. SISTEMA DE NOTIFICACIONES (por tipo de usuario)
 // ==========================================
+function getNotificationKey() {
+  return `erp_notifications_${estado.tipoUsuario || 'general'}`;
+}
+
 function cargarNotificaciones() {
-  const saved = localStorage.getItem('erp_notifications');
+  const key = getNotificationKey();
+  const saved = localStorage.getItem(key);
   if (saved) {
     estado.notificaciones = JSON.parse(saved);
     actualizarContadorNotificaciones();
+  } else {
+    estado.notificaciones = [];
   }
 }
 
 function guardarNotificaciones() {
-  localStorage.setItem('erp_notifications', JSON.stringify(estado.notificaciones));
+  const key = getNotificationKey();
+  localStorage.setItem(key, JSON.stringify(estado.notificaciones));
 }
 
 function agregarNotificacion(tipo, mensaje) {
@@ -649,7 +672,8 @@ function agregarNotificacion(tipo, mensaje) {
     id: Date.now(),
     tipo,
     mensaje,
-    fecha: new Date().toISOString()
+    fecha: new Date().toISOString(),
+    seccion: estado.tipoUsuario
   };
 
   estado.notificaciones.unshift(notificacion);
@@ -831,6 +855,9 @@ function renderLead(lead) {
 
   const statusInfo = statusColors[lead.estado_lead] || statusColors['pendiente_llamada'];
   const fechaCreacion = formatearFechaCorta(lead.created_at);
+  const fechaUpdate = lead.updated_at ? formatearFecha(lead.updated_at) : '-';
+  const puedeEditar = estado.tipoUsuario === 'ejecutivo_leads';
+  const ultimoModificador = lead.updated_by ? lead.updated_by.split('@')[0] : '-';
 
   return `
     <div class="registro-item lead-item">
@@ -840,48 +867,164 @@ function renderLead(lead) {
           <span>${lead.telefono || '-'}</span>
           <span>${lead.email || '-'}</span>
           <span>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
+        </div>
+        <div class="registro-meta">
+          <span>Ejecutivo: <strong>${lead.ejecutivo_derivado || '-'}</strong></span>
           <span>Creado: ${fechaCreacion}</span>
+        </div>
+        <div class="registro-meta lead-historial">
+          <span>Últ. modificación: ${fechaUpdate}</span>
+          <span>Por: <strong>${ultimoModificador}</strong></span>
         </div>
         ${lead.notas ? `<div class="lead-notas">${lead.notas}</div>` : ''}
       </div>
       <div class="lead-actions">
-        <select class="lead-status-select" onchange="actualizarEstadoLead(${lead.id}, this.value)" style="background: ${statusInfo.bg}; color: ${statusInfo.color}; border-color: ${statusInfo.color};">
-          <option value="pendiente_llamada" ${lead.estado_lead === 'pendiente_llamada' ? 'selected' : ''}>Pendiente Llamada</option>
-          <option value="contactado" ${lead.estado_lead === 'contactado' ? 'selected' : ''}>Contactado</option>
-          <option value="insistir" ${lead.estado_lead === 'insistir' ? 'selected' : ''}>Insistir</option>
-          <option value="en_proceso" ${lead.estado_lead === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
-          <option value="cotizacion_enviada" ${lead.estado_lead === 'cotizacion_enviada' ? 'selected' : ''}>Cotización Enviada</option>
-          <option value="negociacion" ${lead.estado_lead === 'negociacion' ? 'selected' : ''}>Negociación</option>
-          <option value="cerrado_ganado" ${lead.estado_lead === 'cerrado_ganado' ? 'selected' : ''}>Cerrado Ganado</option>
-          <option value="cerrado_perdido" ${lead.estado_lead === 'cerrado_perdido' ? 'selected' : ''}>Cerrado Perdido</option>
-          <option value="no_interesado" ${lead.estado_lead === 'no_interesado' ? 'selected' : ''}>No Interesado</option>
-          <option value="no_contesta" ${lead.estado_lead === 'no_contesta' ? 'selected' : ''}>No Contesta</option>
-        </select>
+        ${puedeEditar ? `
+          <select class="lead-status-select" onchange="actualizarEstadoLead(${lead.id}, this.value)" style="background: ${statusInfo.bg}; color: ${statusInfo.color}; border-color: ${statusInfo.color};">
+            <option value="pendiente_llamada" ${lead.estado_lead === 'pendiente_llamada' ? 'selected' : ''}>Pendiente Llamada</option>
+            <option value="contactado" ${lead.estado_lead === 'contactado' ? 'selected' : ''}>Contactado</option>
+            <option value="insistir" ${lead.estado_lead === 'insistir' ? 'selected' : ''}>Insistir</option>
+            <option value="en_proceso" ${lead.estado_lead === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
+            <option value="cotizacion_enviada" ${lead.estado_lead === 'cotizacion_enviada' ? 'selected' : ''}>Cotización Enviada</option>
+            <option value="negociacion" ${lead.estado_lead === 'negociacion' ? 'selected' : ''}>Negociación</option>
+            <option value="cerrado_ganado" ${lead.estado_lead === 'cerrado_ganado' ? 'selected' : ''}>Cerrado Ganado</option>
+            <option value="cerrado_perdido" ${lead.estado_lead === 'cerrado_perdido' ? 'selected' : ''}>Cerrado Perdido</option>
+            <option value="no_interesado" ${lead.estado_lead === 'no_interesado' ? 'selected' : ''}>No Interesado</option>
+            <option value="no_contesta" ${lead.estado_lead === 'no_contesta' ? 'selected' : ''}>No Contesta</option>
+          </select>
+          <button class="btn-ver-historial" onclick="verHistorialLead(${lead.id})" title="Ver historial">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </button>
+        ` : `
+          <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
+        `}
       </div>
     </div>
   `;
 }
 
 window.actualizarEstadoLead = async function(id, nuevoEstado) {
+  // Verificar permisos
+  if (estado.tipoUsuario !== 'ejecutivo_leads') {
+    mostrarToast('error', 'Sin permisos', 'No tienes permisos para modificar leads');
+    return;
+  }
+
   try {
+    // Primero obtener el estado actual para el historial
+    const { data: leadActual } = await supabaseStaging
+      .from('staging_leads')
+      .select('estado_lead')
+      .eq('id', id)
+      .single();
+
+    const estadoAnterior = leadActual?.estado_lead || 'desconocido';
+
+    // Actualizar el lead
     const { error } = await supabaseStaging
       .from('staging_leads')
       .update({
         estado_lead: nuevoEstado,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        updated_by: estado.usuario?.email || 'unknown'
       })
       .eq('id', id);
 
     if (error) throw error;
 
+    // Registrar en historial
+    await supabaseStaging
+      .from('staging_leads_historial')
+      .insert({
+        lead_id: id,
+        estado_anterior: estadoAnterior,
+        estado_nuevo: nuevoEstado,
+        modificado_por: estado.usuario?.email || 'unknown',
+        fecha_modificacion: new Date().toISOString()
+      });
+
     mostrarToast('success', '¡Actualizado!', 'Estado del lead actualizado');
     agregarNotificacion('success', `Estado del lead actualizado a: ${nuevoEstado}`);
+    cargarRegistrosLeads();
 
   } catch (error) {
     console.error('Error al actualizar lead:', error);
     mostrarToast('error', 'Error', 'No se pudo actualizar el lead');
-    cargarRegistrosLeads(); // Recargar para restaurar estado anterior
+    cargarRegistrosLeads();
   }
+};
+
+window.verHistorialLead = async function(id) {
+  try {
+    const { data, error } = await supabaseStaging
+      .from('staging_leads_historial')
+      .select('*')
+      .eq('lead_id', id)
+      .order('fecha_modificacion', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    let contenido = '<div class="historial-lista">';
+    if (!data || data.length === 0) {
+      contenido += '<p class="historial-vacio">No hay historial de modificaciones</p>';
+    } else {
+      data.forEach(h => {
+        const fecha = new Date(h.fecha_modificacion).toLocaleString('es-ES');
+        const usuario = h.modificado_por ? h.modificado_por.split('@')[0] : 'Sistema';
+        contenido += `
+          <div class="historial-item">
+            <div class="historial-cambio">
+              <span class="estado-anterior">${h.estado_anterior}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <span class="estado-nuevo">${h.estado_nuevo}</span>
+            </div>
+            <div class="historial-meta">
+              <span>${fecha}</span>
+              <span>Por: <strong>${usuario}</strong></span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    contenido += '</div>';
+
+    mostrarModalHistorial('Historial del Lead', contenido);
+
+  } catch (error) {
+    console.error('Error al cargar historial:', error);
+    mostrarToast('error', 'Error', 'No se pudo cargar el historial');
+  }
+};
+
+function mostrarModalHistorial(titulo, contenido) {
+  // Crear modal dinámico
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active';
+  modal.id = 'modal-historial';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>${titulo}</h3>
+        <button class="modal-close" onclick="cerrarModalHistorial()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        ${contenido}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) cerrarModalHistorial();
+  });
+}
+
+window.cerrarModalHistorial = function() {
+  const modal = document.getElementById('modal-historial');
+  if (modal) modal.remove();
 };
 
 // ==========================================
@@ -929,6 +1072,14 @@ function renderStockItem(item) {
   const utilidad = item.precio_venta && item.precio_costo ?
     (item.precio_venta - item.precio_costo) : 0;
 
+  // Calcular días retenido
+  const fechaIngreso = new Date(item.created_at);
+  const fechaHoy = item.fecha_venta ? new Date(item.fecha_venta) : new Date();
+  const diasRetenido = Math.floor((fechaHoy - fechaIngreso) / (1000 * 60 * 60 * 24));
+
+  // Tipo de precio
+  const tipoPrecio = item.tipo_precio === 'cif_porcentaje' ? `CIF + ${item.porcentaje_cif || 0}%` : 'Precio Fijo';
+
   return `
     <div class="stock-item">
       <div class="stock-header">
@@ -940,7 +1091,15 @@ function renderStockItem(item) {
         <div class="stock-detail"><span>Color:</span> ${item.color || '-'}</div>
         <div class="stock-detail"><span>Año:</span> ${item.anio || '-'}</div>
         <div class="stock-detail"><span>Ubicación:</span> ${item.ubicacion || '-'}</div>
+        <div class="stock-detail"><span>Días en stock:</span> <strong class="${diasRetenido > 60 ? 'texto-alerta' : ''}">${diasRetenido}</strong></div>
+        <div class="stock-detail"><span>Tipo precio:</span> ${tipoPrecio}</div>
       </div>
+      ${item.estado === 'vendido' ? `
+        <div class="stock-venta-info">
+          <div class="venta-cliente"><span>Vendido a:</span> ${item.vendido_a || '-'}</div>
+          <div class="venta-fecha"><span>Fecha:</span> ${item.fecha_venta ? formatearFechaCorta(item.fecha_venta) : '-'}</div>
+        </div>
+      ` : ''}
       <div class="stock-precios">
         <div class="stock-precio">
           <span class="precio-label">Costo</span>
@@ -966,6 +1125,9 @@ function renderStockItem(item) {
           <option value="en_transito" ${item.estado === 'en_transito' ? 'selected' : ''}>En Tránsito</option>
           <option value="vendido" ${item.estado === 'vendido' ? 'selected' : ''}>Vendido</option>
         </select>
+        <button class="btn-ver-historial" onclick="verHistorialStock(${item.id})" title="Ver historial">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
       </div>
     </div>
   `;
@@ -973,15 +1135,50 @@ function renderStockItem(item) {
 
 window.actualizarEstadoStock = async function(id, nuevoEstado) {
   try {
+    // Obtener estado actual para historial
+    const { data: stockActual } = await supabaseStaging
+      .from('staging_jetour_stock')
+      .select('estado')
+      .eq('id', id)
+      .single();
+
+    const estadoAnterior = stockActual?.estado || 'desconocido';
+
+    // Si se marca como vendido, pedir datos del comprador
+    let datosVenta = {};
+    if (nuevoEstado === 'vendido') {
+      const nombreComprador = prompt('Nombre del comprador:');
+      if (nombreComprador) {
+        datosVenta = {
+          vendido_a: nombreComprador,
+          fecha_venta: new Date().toISOString()
+        };
+      }
+    }
+
     const { error } = await supabaseStaging
       .from('staging_jetour_stock')
       .update({
         estado: nuevoEstado,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        updated_by: estado.usuario?.email || 'unknown',
+        ...datosVenta
       })
       .eq('id', id);
 
     if (error) throw error;
+
+    // Registrar en historial
+    await supabaseStaging
+      .from('staging_stock_historial')
+      .insert({
+        stock_id: id,
+        estado_anterior: estadoAnterior,
+        estado_nuevo: nuevoEstado,
+        modificado_por: estado.usuario?.email || 'unknown',
+        fecha_modificacion: new Date().toISOString(),
+        detalle: datosVenta.vendido_a ? `Vendido a: ${datosVenta.vendido_a}` : null
+      });
 
     mostrarToast('success', '¡Actualizado!', 'Estado del vehículo actualizado');
     cargarRegistrosStock();
@@ -990,6 +1187,50 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
   } catch (error) {
     console.error('Error al actualizar stock:', error);
     mostrarToast('error', 'Error', 'No se pudo actualizar el vehículo');
+  }
+};
+
+window.verHistorialStock = async function(id) {
+  try {
+    const { data, error } = await supabaseStaging
+      .from('staging_stock_historial')
+      .select('*')
+      .eq('stock_id', id)
+      .order('fecha_modificacion', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    let contenido = '<div class="historial-lista">';
+    if (!data || data.length === 0) {
+      contenido += '<p class="historial-vacio">No hay historial de modificaciones</p>';
+    } else {
+      data.forEach(h => {
+        const fecha = new Date(h.fecha_modificacion).toLocaleString('es-ES');
+        const usuario = h.modificado_por ? h.modificado_por.split('@')[0] : 'Sistema';
+        contenido += `
+          <div class="historial-item">
+            <div class="historial-cambio">
+              <span class="estado-anterior">${h.estado_anterior}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <span class="estado-nuevo">${h.estado_nuevo}</span>
+            </div>
+            ${h.detalle ? `<div class="historial-detalle">${h.detalle}</div>` : ''}
+            <div class="historial-meta">
+              <span>${fecha}</span>
+              <span>Por: <strong>${usuario}</strong></span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    contenido += '</div>';
+
+    mostrarModalHistorial('Historial del Vehículo', contenido);
+
+  } catch (error) {
+    console.error('Error al cargar historial:', error);
+    mostrarToast('error', 'Error', 'No se pudo cargar el historial');
   }
 };
 
@@ -1191,7 +1432,74 @@ function renderDashboard(container, stats) {
 }
 
 // ==========================================
-// 17. ESTILOS DINÁMICOS
+// 17. FLOTA MENSUAL RENT A CAR
+// ==========================================
+async function cargarFlotaMensual() {
+  const container = document.getElementById('list-flota-mensual');
+  if (!container) return;
+
+  container.innerHTML = '<div class="registros-empty">Cargando flota...</div>';
+
+  try {
+    const { data, error } = await supabaseStaging
+      .from('staging_rentacar_flota')
+      .select('*')
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(12);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="registros-empty">No hay registros de flota</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(item => renderFlotaMensual(item)).join('');
+
+  } catch (error) {
+    console.error('Error al cargar flota:', error);
+    container.innerHTML = '<div class="registros-empty">Error al cargar flota</div>';
+  }
+}
+
+function renderFlotaMensual(item) {
+  const meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const mesNombre = meses[parseInt(item.mes)] || item.mes;
+
+  return `
+    <div class="flota-item">
+      <div class="flota-header">
+        <span class="flota-periodo">${mesNombre} ${item.anio}</span>
+        <span class="registro-status ${item.status}">${item.status}</span>
+      </div>
+      <div class="flota-categorias">
+        <div class="flota-cat">
+          <span class="cat-label">Vehículos</span>
+          <span class="cat-valor">${item.vehiculos || 0}</span>
+        </div>
+        <div class="flota-cat">
+          <span class="cat-label">Camionetas</span>
+          <span class="cat-valor">${item.camionetas || 0}</span>
+        </div>
+        <div class="flota-cat">
+          <span class="cat-label">SUV</span>
+          <span class="cat-valor">${item.suv || 0}</span>
+        </div>
+        <div class="flota-cat">
+          <span class="cat-label">Full Size</span>
+          <span class="cat-valor">${item.fullsize || 0}</span>
+        </div>
+      </div>
+      <div class="flota-total">
+        Total: <strong>${(item.vehiculos || 0) + (item.camionetas || 0) + (item.suv || 0) + (item.fullsize || 0)}</strong> unidades
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================
+// 18. ESTILOS DINÁMICOS
 // ==========================================
 const style = document.createElement('style');
 style.textContent = `
