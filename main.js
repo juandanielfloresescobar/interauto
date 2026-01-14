@@ -420,14 +420,6 @@ function configurarReferencias() {
 function refrescarTodo() {
   if (elementos.fechaBadge) elementos.fechaBadge.textContent = estado.fecha || '—';
 
-  if (estado.fecha && ingresosMensuales.length > 0) {
-      const p = estado.fecha.split('-');
-      if (p.length===3) {
-          const clave = `${parseInt(p[0])}-${String(parseInt(p[1])).padStart(2,'0')}`;
-          if (ingresosMensuales.some(i => i.clave === clave)) estado.mesIngresos = clave;
-      }
-  }
-
   actualizarIngresosKpi();
 
   dataFiltrada = filtrarPorFecha(dataCompleta, estado.fecha);
