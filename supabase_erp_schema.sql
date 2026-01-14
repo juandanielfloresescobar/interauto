@@ -93,10 +93,12 @@ CREATE TABLE IF NOT EXISTS staging.staging_rentacar_flota (
   id BIGSERIAL PRIMARY KEY,
   anio INTEGER NOT NULL,
   mes INTEGER NOT NULL CHECK (mes >= 1 AND mes <= 12),
-  vehiculos INTEGER DEFAULT 0,
+  automoviles INTEGER DEFAULT 0,
   camionetas INTEGER DEFAULT 0,
   suv INTEGER DEFAULT 0,
-  fullsize INTEGER DEFAULT 0,
+  utilitarios INTEGER DEFAULT 0,
+  sin_mantenimiento INTEGER DEFAULT 0,  -- Vehículos sin uso por mantenimiento
+  accidentados INTEGER DEFAULT 0,       -- Vehículos accidentados
   observaciones TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   created_by VARCHAR(255),
@@ -117,6 +119,7 @@ CREATE TABLE IF NOT EXISTS staging.staging_rentacar_ingresos (
   nombre_ingreso VARCHAR(255),
   ingreso_bs DECIMAL(12,2),
   ingreso_usd DECIMAL(12,2),
+  es_anticipo BOOLEAN DEFAULT FALSE,
   comentarios TEXT,
   observaciones TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -214,6 +217,34 @@ BEGIN
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'staging' AND table_name = 'staging_jetour_stock' AND column_name = 'updated_by') THEN
     ALTER TABLE staging.staging_jetour_stock ADD COLUMN updated_by VARCHAR(255);
+  END IF;
+END $$;
+
+-- Agregar columnas nuevas a staging_rentacar_flota si no existen
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'staging' AND table_name = 'staging_rentacar_flota' AND column_name = 'automoviles') THEN
+    ALTER TABLE staging.staging_rentacar_flota ADD COLUMN automoviles INTEGER DEFAULT 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'staging' AND table_name = 'staging_rentacar_flota' AND column_name = 'utilitarios') THEN
+    ALTER TABLE staging.staging_rentacar_flota ADD COLUMN utilitarios INTEGER DEFAULT 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'staging' AND table_name = 'staging_rentacar_flota' AND column_name = 'sin_mantenimiento') THEN
+    ALTER TABLE staging.staging_rentacar_flota ADD COLUMN sin_mantenimiento INTEGER DEFAULT 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'staging' AND table_name = 'staging_rentacar_flota' AND column_name = 'accidentados') THEN
+    ALTER TABLE staging.staging_rentacar_flota ADD COLUMN accidentados INTEGER DEFAULT 0;
+  END IF;
+END $$;
+
+-- Agregar columna es_anticipo a staging_rentacar_ingresos si no existe
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'staging' AND table_name = 'staging_rentacar_ingresos' AND column_name = 'es_anticipo') THEN
+    ALTER TABLE staging.staging_rentacar_ingresos ADD COLUMN es_anticipo BOOLEAN DEFAULT FALSE;
   END IF;
 END $$;
 
