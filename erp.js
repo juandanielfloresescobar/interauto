@@ -26,6 +26,11 @@ const USER_ROLES = {
   'leads@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] },
   'ejecutivo_leads@groupsaa.com': { tipo: 'ejecutivo_leads', nombre: 'Ejecutivo de Leads', badge: 'EJECUTIVO', permisos: ['ver', 'crear', 'editar'] },
   'jetour@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR', permisos: ['ver', 'crear', 'editar'] }
+  'pablo.toro@saavrentacar.com': { tipo: 'rentacar', nombre: 'Rent a Car Pablo', badge: 'RENT A CAR' },
+  'daniela.eguez@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Daniela', badge: 'INTERAUTO' },
+  'german.decebal@toyosa.com': { tipo: 'leads', nombre: 'German Leads', badge: 'LEADS' },
+  'yngrid.numbela@groupsaa.com': { tipo: 'leads', nombre: 'Yngrid Leads', badge: 'LEADS' },
+  'juan.flores@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR' }
 };
 
 // ==========================================
