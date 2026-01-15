@@ -33,7 +33,7 @@ const USER_ROLES = {
   },
   'yngrid.numbela@groupsaa.com': {
     modulos: ['leads'],
-    nombre: 'Leads & Marketing Manager',
+    nombre: 'Yngrid Numbela',
     permisos: ['ver']
   },
   'diego.zapata@groupsaa.com': {
@@ -43,12 +43,12 @@ const USER_ROLES = {
   },
   'juan.flores@groupsaa.com': {
     modulos: ['jetour', 'interauto', 'leads','rentacar' ],
-    nombre: 'Stock Jetour',
+    nombre: 'Daniel Flores',
     permisos: ['ver', 'crear', 'editar']
   },
   'german.decebal@groupsaa.com': {
     modulos: ['leads'],
-    nombre: 'Call Center Manager',
+    nombre: 'German Decebal',
     permisos: ['ver']
   }
 };
