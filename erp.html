@@ -524,6 +524,123 @@
       height: 18px;
     }
 
+    /* Estados del botón de envío */
+    .btn-submit.loading {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      pointer-events: none;
+    }
+
+    .btn-submit.success {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      animation: pulse-success 0.5s ease;
+    }
+
+    .btn-submit.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes pulse-success {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
+    /* Animación de éxito en formulario */
+    .form-success {
+      animation: form-glow 1s ease;
+    }
+
+    @keyframes form-glow {
+      0%, 100% { box-shadow: none; }
+      50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); }
+    }
+
+    /* Indicador de estado en tiempo real */
+    .realtime-indicator {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 20px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: #22c55e;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .realtime-indicator.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .realtime-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Animación para nuevos registros */
+    .registro-item.new {
+      animation: slide-in 0.5s ease, highlight 2s ease;
+    }
+
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes highlight {
+      0%, 100% { background: rgba(255, 255, 255, 0.03); }
+      30% { background: rgba(34, 197, 94, 0.15); }
+    }
+
+    /* Estado de carga en lista de registros */
+    .registros-list.loading {
+      position: relative;
+    }
+
+    .registros-list.loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      animation: loading-bar 1.5s infinite;
+    }
+
+    @keyframes loading-bar {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
     /* ========== LISTA DE REGISTROS ========== */
     .registros-section {
       margin-top: 32px;
@@ -618,6 +735,34 @@
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
+    }
+
+    .tag-anticipo {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      margin-right: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spin-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spin-text::before {
+      content: '';
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
 
     .registro-status {
@@ -1427,6 +1572,12 @@
         </button>
       </div>
     </header>
+
+    <!-- Indicador de conexión en tiempo real -->
+    <div id="realtime-indicator" class="realtime-indicator">
+      <div class="realtime-dot"></div>
+      <span>Conectado</span>
+    </div>
 
     <!-- Contenido Principal -->
     <main class="erp-main">
