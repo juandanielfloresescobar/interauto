@@ -18,15 +18,73 @@ const supabaseDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 });
 
 // ==========================================
-// 2. MAPEO DE USUARIOS A TIPO
+// 2. MAPEO DE USUARIOS A TIPO Y PERMISOS MULTI-MÓDULO
 // ==========================================
 const USER_ROLES = {
-  'pablo.toro@saavrentacar.com': { tipo: 'rentacar', nombre: 'Rent a Car Admin', badge: 'RENT A CAR', permisos: ['ver', 'crear', 'editar'] },
-  'daniela.eguez@groupsaa.com': { tipo: 'interauto', nombre: 'Interauto Admin', badge: 'INTERAUTO', permisos: ['ver', 'crear', 'editar'] },
-  'yngrid.numbela@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] },
-  'diego.zapata@groupsaa.com': { tipo: 'ejecutivo_leads', nombre: 'Ejecutivo de Leads', badge: 'EJECUTIVO', permisos: ['ver', 'crear', 'editar'] },
-  'juan.flores@groupsaa.com': { tipo: 'jetour', nombre: 'Stock Jetour', badge: 'JETOUR', permisos: ['ver', 'crear', 'editar'] },
-  'german.decebal@groupsaa.com': { tipo: 'leads', nombre: 'Leads Manager', badge: 'LEADS', permisos: ['ver'] }
+  'pablo.toro@saavrentacar.com': {
+    modulos: ['rentacar'],
+    nombre: 'Rent a Car Admin',
+    permisos: ['ver', 'crear', 'editar']
+  },
+  'daniela.eguez@groupsaa.com': {
+    modulos: ['interauto', 'leads'],
+    nombre: 'Interauto Admin',
+    permisos: ['ver', 'crear', 'editar']
+  },
+  'yngrid.numbela@groupsaa.com': {
+    modulos: ['leads'],
+    nombre: 'Leads Manager',
+    permisos: ['ver']
+  },
+  'diego.zapata@groupsaa.com': {
+    modulos: ['ejecutivo_leads'],
+    nombre: 'Ejecutivo de Leads',
+    permisos: ['ver', 'crear', 'editar']
+  },
+  'juan.flores@groupsaa.com': {
+    modulos: ['jetour', 'interauto'],
+    nombre: 'Stock Jetour',
+    permisos: ['ver', 'crear', 'editar']
+  },
+  'german.decebal@groupsaa.com': {
+    modulos: ['leads'],
+    nombre: 'Leads Manager',
+    permisos: ['ver']
+  }
+};
+
+// Configuración de módulos disponibles
+const MODULOS_CONFIG = {
+  rentacar: {
+    nombre: 'Rent a Car',
+    descripcion: 'Ingresos, cobranzas y flota',
+    icono: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>`,
+    badge: 'RENT A CAR'
+  },
+  interauto: {
+    nombre: 'Interauto',
+    descripcion: 'Ventas, facturación y stock',
+    icono: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+    badge: 'INTERAUTO'
+  },
+  leads: {
+    nombre: 'Leads',
+    descripcion: 'Gestión de prospectos',
+    icono: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    badge: 'LEADS'
+  },
+  ejecutivo_leads: {
+    nombre: 'Ejecutivo Leads',
+    descripcion: 'Gestión avanzada de leads',
+    icono: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>`,
+    badge: 'EJECUTIVO'
+  },
+  jetour: {
+    nombre: 'Stock Jetour',
+    descripcion: 'Gestión de inventario Jetour',
+    icono: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+    badge: 'JETOUR'
+  }
 };
 
 // ==========================================
@@ -34,7 +92,8 @@ const USER_ROLES = {
 // ==========================================
 let estado = {
   usuario: null,
-  tipoUsuario: null,
+  userRole: null,
+  moduloActivo: null,
   tabActiva: null,
   notificaciones: [],
   formPendiente: null,
@@ -66,6 +125,12 @@ function inicializarElementos() {
   elementos.inputPassword = document.getElementById('password');
   elementos.btnLogin = document.getElementById('btn-login');
 
+  // Pantalla de selección
+  elementos.selectionScreen = document.getElementById('selection-screen');
+  elementos.selectionGrid = document.getElementById('selection-grid');
+  elementos.selectionTitle = document.getElementById('selection-title');
+  elementos.btnLogoutSelection = document.getElementById('btn-logout-selection');
+
   // Dashboard
   elementos.erpDashboard = document.getElementById('erp-dashboard');
   elementos.userBadge = document.getElementById('user-badge');
@@ -86,6 +151,7 @@ function inicializarElementos() {
     'rentacar-flota': document.getElementById('form-rentacar-flota'),
     'interauto-ventas': document.getElementById('form-interauto-ventas'),
     'interauto-ingresos': document.getElementById('form-interauto-ingresos'),
+    'interauto-stock': document.getElementById('form-interauto-stock'),
     'leads-registro': document.getElementById('form-leads-registro'),
     'leads-seguimiento': document.getElementById('form-leads-seguimiento'),
     'jetour-stock': document.getElementById('form-jetour-stock'),
@@ -127,8 +193,11 @@ function inicializarEventos() {
   // Login
   elementos.loginForm.addEventListener('submit', handleLogin);
 
-  // Logout
+  // Logout (ambos botones)
   elementos.btnLogout.addEventListener('click', handleLogout);
+  if (elementos.btnLogoutSelection) {
+    elementos.btnLogoutSelection.addEventListener('click', handleLogout);
+  }
 
   // Tabs
   document.querySelectorAll('.erp-tab').forEach(tab => {
@@ -151,17 +220,17 @@ function inicializarEventos() {
   if (elementos.formJetourStock) {
     elementos.formJetourStock.addEventListener('submit', (e) => abrirConfirmacion(e, 'staging_jetour_stock', 'Stock Jetour'));
 
-    // Calcular margen automáticamente
-    const precioCosto = elementos.formJetourStock.querySelector('input[name="precio_costo"]');
-    const precioVenta = elementos.formJetourStock.querySelector('input[name="precio_venta"]');
+    // Calcular margen automáticamente (Precio CIF vs Cliente Final)
+    const precioCIF = elementos.formJetourStock.querySelector('input[name="precio_costo"]');
+    const precioClienteFinal = elementos.formJetourStock.querySelector('input[name="precio_cliente_final"]');
     const margenCalculado = document.getElementById('margen-calculado');
 
     const calcularMargen = () => {
-      const costo = parseFloat(precioCosto.value) || 0;
-      const venta = parseFloat(precioVenta.value) || 0;
-      if (costo > 0 && venta > 0) {
-        const margen = ((venta - costo) / costo * 100).toFixed(1);
-        const utilidad = (venta - costo).toFixed(2);
+      const cif = parseFloat(precioCIF.value) || 0;
+      const venta = parseFloat(precioClienteFinal.value) || 0;
+      if (cif > 0 && venta > 0) {
+        const margen = ((venta - cif) / cif * 100).toFixed(1);
+        const utilidad = (venta - cif).toFixed(2);
         margenCalculado.value = `${margen}% ($${utilidad})`;
         margenCalculado.style.color = margen > 0 ? '#22c55e' : '#ef4444';
       } else {
@@ -170,8 +239,8 @@ function inicializarEventos() {
       }
     };
 
-    precioCosto.addEventListener('input', calcularMargen);
-    precioVenta.addEventListener('input', calcularMargen);
+    precioCIF.addEventListener('input', calcularMargen);
+    precioClienteFinal.addEventListener('input', calcularMargen);
   }
 
   // Checkbox anticipo
@@ -243,9 +312,16 @@ async function handleLogin(e) {
 
     // Login exitoso
     estado.usuario = data.user;
-    estado.tipoUsuario = userRole.tipo;
+    estado.userRole = userRole;
 
-    mostrarDashboard(userRole);
+    // Si tiene múltiples módulos, mostrar pantalla de selección
+    if (userRole.modulos.length > 1) {
+      mostrarPantallaSeleccion(userRole);
+    } else {
+      // Solo un módulo, ir directo
+      estado.moduloActivo = userRole.modulos[0];
+      mostrarDashboard(userRole.modulos[0]);
+    }
     agregarNotificacion('info', `Sesión iniciada como ${userRole.nombre}`);
 
   } catch (error) {
@@ -270,10 +346,12 @@ async function handleLogout() {
   }
 
   estado.usuario = null;
-  estado.tipoUsuario = null;
+  estado.userRole = null;
+  estado.moduloActivo = null;
 
-  // Mostrar login
+  // Ocultar todo y mostrar login
   elementos.erpDashboard.style.display = 'none';
+  if (elementos.selectionScreen) elementos.selectionScreen.classList.remove('active');
   elementos.loginSection.style.display = 'flex';
 
   // Limpiar formularios
@@ -289,8 +367,15 @@ async function verificarSesion() {
       const userRole = USER_ROLES[session.user.email.toLowerCase()];
       if (userRole) {
         estado.usuario = session.user;
-        estado.tipoUsuario = userRole.tipo;
-        mostrarDashboard(userRole);
+        estado.userRole = userRole;
+
+        // Si tiene múltiples módulos, mostrar selección
+        if (userRole.modulos.length > 1) {
+          mostrarPantallaSeleccion(userRole);
+        } else {
+          estado.moduloActivo = userRole.modulos[0];
+          mostrarDashboard(userRole.modulos[0]);
+        }
         return;
       }
     }
@@ -300,19 +385,47 @@ async function verificarSesion() {
 }
 
 // ==========================================
-// 7. DASHBOARD
+// 7. PANTALLA DE SELECCIÓN Y DASHBOARD
 // ==========================================
-function mostrarDashboard(userRole) {
-  // Ocultar login, mostrar dashboard
+function mostrarPantallaSeleccion(userRole) {
   elementos.loginSection.style.display = 'none';
+  elementos.erpDashboard.style.display = 'none';
+  elementos.selectionScreen.classList.add('active');
+
+  elementos.selectionTitle.textContent = `Bienvenido, ${userRole.nombre}`;
+
+  // Generar tarjetas de módulos disponibles
+  elementos.selectionGrid.innerHTML = userRole.modulos.map(modulo => {
+    const config = MODULOS_CONFIG[modulo];
+    if (!config) return '';
+    return `
+      <div class="selection-card" onclick="seleccionarModulo('${modulo}')">
+        <div class="selection-card-icon">${config.icono}</div>
+        <div class="selection-card-title">${config.nombre}</div>
+        <div class="selection-card-desc">${config.descripcion}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.seleccionarModulo = function(modulo) {
+  estado.moduloActivo = modulo;
+  elementos.selectionScreen.classList.remove('active');
+  mostrarDashboard(modulo);
+};
+
+function mostrarDashboard(modulo) {
+  // Ocultar login y selección, mostrar dashboard
+  elementos.loginSection.style.display = 'none';
+  if (elementos.selectionScreen) elementos.selectionScreen.classList.remove('active');
   elementos.erpDashboard.style.display = 'block';
 
   // Cargar notificaciones específicas del usuario
   cargarNotificaciones();
 
-  // Actualizar header
-  elementos.userBadge.textContent = userRole.badge;
-  elementos.welcomeTitle.textContent = `Bienvenido, ${userRole.nombre}`;
+  const config = MODULOS_CONFIG[modulo];
+  elementos.userBadge.textContent = config ? config.badge : modulo.toUpperCase();
+  elementos.welcomeTitle.textContent = `Bienvenido, ${estado.userRole?.nombre || 'Usuario'}`;
 
   // Ocultar todos los tabs primero
   elementos.tabsRentacar.style.display = 'none';
@@ -320,8 +433,8 @@ function mostrarDashboard(userRole) {
   if (elementos.tabsLeads) elementos.tabsLeads.style.display = 'none';
   if (elementos.tabsJetour) elementos.tabsJetour.style.display = 'none';
 
-  // Mostrar tabs correspondientes según tipo de usuario
-  switch (userRole.tipo) {
+  // Mostrar tabs correspondientes según módulo
+  switch (modulo) {
     case 'rentacar':
       elementos.tabsRentacar.style.display = 'flex';
       elementos.welcomeSubtitle.textContent = 'Portal de ingesta de datos - Rent a Car';
@@ -391,10 +504,13 @@ function cargarRegistrosSegunTab(tabId) {
       cargarFlotaMensual();
       break;
     case 'interauto-ventas':
-      cargarRegistros('staging_interauto_ventas', 'list-ia-ventas');
+      cargarRegistros('staging_interauto_ventas', 'list-ia-ventas', true);
       break;
     case 'interauto-ingresos':
       cargarRegistros('staging_interauto_ingresos', 'list-ia-ingresos');
+      break;
+    case 'interauto-stock':
+      cargarStockParaInterauto();
       break;
     case 'leads-registro':
     case 'leads-seguimiento':
@@ -475,7 +591,7 @@ async function handleSubmit(form, tabla, tipoRegistro) {
   `;
 
   // Campos numéricos decimales
-  const camposDecimales = ['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'precio_costo', 'precio_venta', 'utilidad', 'monto_pendiente', 'presupuesto'];
+  const camposDecimales = ['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'precio_costo', 'precio_cliente_final', 'precio_mayorista', 'precio_grupo', 'utilidad', 'monto_pendiente', 'presupuesto'];
   // Campos numéricos enteros
   const camposEnteros = ['anio', 'mes', 'automoviles', 'camionetas', 'suv', 'utilitarios', 'sin_mantenimiento', 'accidentados'];
   // Tablas que tienen es_anticipo
@@ -721,7 +837,7 @@ function renderRegistro(registro, tabla, conPago, esNuevo = false) {
       break;
     case 'staging_interauto_ventas':
       titulo = `${registro.marca} ${registro.modelo}`;
-      meta = `${registro.vendedor} | $${formatNumber(registro.precio_usd)}`;
+      meta = `${registro.vendedor} | $${formatNumber(registro.precio_usd)} | Utilidad: Bs ${formatNumber(registro.utilidad)}`;
       break;
     case 'staging_interauto_ingresos':
       titulo = registro.nombre_factura || `Factura ${registro.numero_factura}`;
@@ -733,30 +849,59 @@ function renderRegistro(registro, tabla, conPago, esNuevo = false) {
       break;
     case 'staging_jetour_stock':
       titulo = `${registro.modelo} - ${registro.color || 'N/A'}`;
-      meta = `VIN: ${registro.vin || '-'} | $${formatNumber(registro.precio_venta)}`;
+      meta = `VIN: ${registro.vin || '-'} | $${formatNumber(registro.precio_cliente_final || registro.precio_venta)}`;
       break;
   }
 
   const fechaCreacion = formatearFechaCorta(registro.created_at);
   const fechaUpdate = registro.updated_at ? formatearFechaCorta(registro.updated_at) : fechaCreacion;
-  const statusClass = registro.pagado ? 'pagado' : registro.status;
+  const modificadoPor = registro.updated_by ? registro.updated_by.split('@')[0] : '-';
   const nuevoClass = esNuevo ? ' new' : '';
 
+  // Determinar estado de pago
+  let statusClass = registro.status || 'pendiente';
+  let statusText = registro.status || 'Pendiente';
+
+  if (registro.pagado) {
+    if (registro.tipo_pago === 'total') {
+      statusClass = 'pagado_total';
+      statusText = 'Pagado Total';
+    } else if (registro.tipo_pago === 'parcial') {
+      statusClass = 'pagado_parcial';
+      statusText = 'Pago Parcial';
+    } else if (registro.tipo_pago === 'negociacion') {
+      statusClass = 'negociacion';
+      statusText = 'Negociación';
+    } else {
+      statusClass = 'pagado';
+      statusText = 'Pagado';
+    }
+  }
+
+  // Generar botones de pago si aplica
   let accionesHTML = '';
   if (conPago && !registro.pagado) {
     accionesHTML = `
-      <div class="registro-actions">
-        <button class="btn-marcar-pagado" onclick="marcarPagado('${tabla}', ${registro.id})">
-          Marcar Pagado
+      <div class="registro-payment-actions">
+        <button class="btn-pago btn-pago-total" onclick="marcarPagadoTotal('${tabla}', ${registro.id})">
+          Pagado Total
+        </button>
+        <button class="btn-pago btn-pago-parcial" onclick="marcarPagadoParcial('${tabla}', ${registro.id})">
+          Pago Parcial
+        </button>
+        <button class="btn-pago btn-pago-negociacion" onclick="marcarPagoNegociacion('${tabla}', ${registro.id})">
+          Negociación
         </button>
       </div>
     `;
   } else if (conPago && registro.pagado) {
-    accionesHTML = `
-      <div class="registro-actions">
-        <span class="btn-marcar-pagado pagado">Pagado</span>
-      </div>
-    `;
+    let pagoInfo = '';
+    if (registro.tipo_pago === 'parcial' && registro.saldo_pendiente > 0) {
+      pagoInfo = `<div class="pago-info parcial">Pagado: Bs ${formatNumber(registro.monto_pagado)} | Saldo: Bs ${formatNumber(registro.saldo_pendiente)}</div>`;
+    } else if (registro.tipo_pago === 'negociacion') {
+      pagoInfo = `<div class="pago-info negociacion">${registro.detalle_negociacion || 'Cerrado por negociación'}</div>`;
+    }
+    accionesHTML = pagoInfo;
   }
 
   return `
@@ -766,10 +911,10 @@ function renderRegistro(registro, tabla, conPago, esNuevo = false) {
         <div class="registro-meta">
           <span>${meta}</span>
           <span>Creado: ${fechaCreacion}</span>
-          <span>Actualizado: ${fechaUpdate}</span>
+          <span>Modificado: ${modificadoPor}</span>
         </div>
       </div>
-      <span class="registro-status ${statusClass}">${registro.pagado ? 'Pagado' : registro.status}</span>
+      <span class="registro-status ${statusClass}">${statusText}</span>
       ${accionesHTML}
     </div>
   `;
@@ -1671,7 +1816,239 @@ function renderFlotaMensual(item) {
 }
 
 // ==========================================
-// 18. ESTILOS DINÁMICOS
+// 18. CONVERSIÓN DE MONEDA
+// ==========================================
+window.convertirMoneda = function(inputOrigen, inputDestino, direccion) {
+  const origen = document.getElementById(inputOrigen);
+  const destino = document.getElementById(inputDestino);
+
+  if (!origen || !destino) return;
+
+  const valor = parseFloat(origen.value) || 0;
+  if (valor === 0) return;
+
+  let resultado;
+  if (direccion === 'bs-to-usd') {
+    resultado = (valor / TIPO_CAMBIO).toFixed(2);
+  } else {
+    resultado = (valor * TIPO_CAMBIO).toFixed(2);
+  }
+
+  destino.value = resultado;
+  destino.classList.add('form-success');
+  setTimeout(() => destino.classList.remove('form-success'), 500);
+};
+
+// ==========================================
+// 19. FUNCIONES DE PAGO (CUENTAS POR COBRAR)
+// ==========================================
+window.marcarPagadoTotal = async function(tabla, id) {
+  if (!confirm('¿Confirma marcar esta cuenta como PAGADA en su totalidad?')) return;
+
+  try {
+    const { error } = await supabaseDB
+      .from(tabla)
+      .update({
+        pagado: true,
+        tipo_pago: 'total',
+        monto_pagado: null, // Se asume el total
+        updated_at: new Date().toISOString(),
+        updated_by: estado.usuario?.email || 'unknown',
+        fecha_pago: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    // Registrar en historial
+    await registrarHistorialPago(tabla, id, 'pagado_total', null);
+
+    mostrarToast('success', '¡Pago Total!', 'La cuenta ha sido marcada como pagada');
+    cargarRegistros(tabla, tabla === 'staging_rentacar_cobranzas' ? 'list-rc-cobranzas' : 'list-ia-ventas', true);
+
+  } catch (error) {
+    console.error('Error al marcar pago:', error);
+    mostrarToast('error', 'Error', 'No se pudo actualizar el registro');
+  }
+};
+
+window.marcarPagadoParcial = async function(tabla, id) {
+  const monto = prompt('Ingrese el monto pagado (Bs):');
+  if (!monto || isNaN(monto)) return;
+
+  const montoPagado = parseFloat(monto);
+  if (montoPagado <= 0) {
+    mostrarToast('error', 'Error', 'El monto debe ser mayor a 0');
+    return;
+  }
+
+  try {
+    // Obtener el registro actual para calcular el saldo
+    const { data: registro } = await supabaseDB
+      .from(tabla)
+      .select('monto_bs, monto_pagado')
+      .eq('id', id)
+      .single();
+
+    const pagoAnterior = parseFloat(registro?.monto_pagado) || 0;
+    const totalPagado = pagoAnterior + montoPagado;
+    const montoOriginal = parseFloat(registro?.monto_bs) || 0;
+    const saldoPendiente = montoOriginal - totalPagado;
+
+    const { error } = await supabaseDB
+      .from(tabla)
+      .update({
+        tipo_pago: 'parcial',
+        monto_pagado: totalPagado,
+        saldo_pendiente: saldoPendiente > 0 ? saldoPendiente : 0,
+        pagado: saldoPendiente <= 0,
+        updated_at: new Date().toISOString(),
+        updated_by: estado.usuario?.email || 'unknown',
+        fecha_pago: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await registrarHistorialPago(tabla, id, 'pago_parcial', montoPagado);
+
+    mostrarToast('success', '¡Pago Parcial!', `Se registró un abono de Bs ${formatNumber(montoPagado)}`);
+    cargarRegistros(tabla, tabla === 'staging_rentacar_cobranzas' ? 'list-rc-cobranzas' : 'list-ia-ventas', true);
+
+  } catch (error) {
+    console.error('Error al registrar pago parcial:', error);
+    mostrarToast('error', 'Error', 'No se pudo actualizar el registro');
+  }
+};
+
+window.marcarPagoNegociacion = async function(tabla, id) {
+  const detalle = prompt('Describa el intercambio/negociación realizada:');
+  if (!detalle) return;
+
+  try {
+    const { error } = await supabaseDB
+      .from(tabla)
+      .update({
+        pagado: true,
+        tipo_pago: 'negociacion',
+        detalle_negociacion: detalle,
+        updated_at: new Date().toISOString(),
+        updated_by: estado.usuario?.email || 'unknown',
+        fecha_pago: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await registrarHistorialPago(tabla, id, 'negociacion', null, detalle);
+
+    mostrarToast('success', '¡Negociación!', 'La cuenta ha sido cerrada por negociación');
+    cargarRegistros(tabla, tabla === 'staging_rentacar_cobranzas' ? 'list-rc-cobranzas' : 'list-ia-ventas', true);
+
+  } catch (error) {
+    console.error('Error al registrar negociación:', error);
+    mostrarToast('error', 'Error', 'No se pudo actualizar el registro');
+  }
+};
+
+async function registrarHistorialPago(tabla, registroId, tipoPago, monto, detalle = null) {
+  try {
+    await supabaseDB
+      .from('staging_pagos_historial')
+      .insert({
+        tabla_origen: tabla,
+        registro_id: registroId,
+        tipo_pago: tipoPago,
+        monto: monto,
+        detalle: detalle,
+        registrado_por: estado.usuario?.email || 'unknown',
+        fecha_registro: new Date().toISOString()
+      });
+  } catch (error) {
+    console.error('Error al registrar historial de pago:', error);
+  }
+}
+
+// ==========================================
+// 20. STOCK PARA INTERAUTO (SIN DASHBOARD)
+// ==========================================
+async function cargarStockParaInterauto() {
+  const container = document.getElementById('list-interauto-stock');
+  if (!container) return;
+
+  container.innerHTML = '<div class="registros-empty">Cargando stock disponible...</div>';
+
+  try {
+    const { data, error } = await supabaseDB
+      .from('staging_jetour_stock')
+      .select('*')
+      .eq('estado', 'disponible')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="registros-empty">No hay vehículos disponibles</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(item => renderStockSimple(item)).join('');
+
+  } catch (error) {
+    console.error('Error al cargar stock:', error);
+    container.innerHTML = '<div class="registros-empty">Error al cargar stock</div>';
+  }
+}
+
+function renderStockSimple(item) {
+  return `
+    <div class="stock-item">
+      <div class="stock-header">
+        <div class="stock-modelo">${item.modelo || 'N/A'}</div>
+        <span class="registro-status disponible">Disponible</span>
+      </div>
+      <div class="stock-details">
+        <div class="stock-detail"><span>VIN:</span> ${item.vin || '-'}</div>
+        <div class="stock-detail"><span>Color:</span> ${item.color || '-'}</div>
+        <div class="stock-detail"><span>Año:</span> ${item.anio || '-'}</div>
+        <div class="stock-detail"><span>Ubicación:</span> ${item.ubicacion || '-'}</div>
+      </div>
+      <div class="precio-row">
+        <div class="precio-card">
+          <div class="precio-card-label">Precio CIF</div>
+          <div class="precio-card-value cif">$${formatNumber(item.precio_costo)}</div>
+        </div>
+        <div class="precio-card">
+          <div class="precio-card-label">Cliente Final</div>
+          <div class="precio-card-value venta">$${formatNumber(item.precio_cliente_final)}</div>
+        </div>
+        <div class="precio-card">
+          <div class="precio-card-label">Mayorista</div>
+          <div class="precio-card-value">$${formatNumber(item.precio_mayorista || 0)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================
+// 21. MAYÚSCULAS EN INPUTS
+// ==========================================
+document.addEventListener('input', function(e) {
+  if (e.target.classList.contains('erp-input') || e.target.classList.contains('erp-textarea')) {
+    // No aplicar a inputs de tipo number, date, email
+    const tipo = e.target.type;
+    if (!['number', 'date', 'email', 'password'].includes(tipo)) {
+      const start = e.target.selectionStart;
+      const end = e.target.selectionEnd;
+      e.target.value = e.target.value.toUpperCase();
+      e.target.setSelectionRange(start, end);
+    }
+  }
+});
+
+// ==========================================
+// 22. ESTILOS DINÁMICOS
 // ==========================================
 const style = document.createElement('style');
 style.textContent = `
