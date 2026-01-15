@@ -456,6 +456,10 @@ async function confirmarEnvio() {
 // ==========================================
 // 9. MANEJO DE FORMULARIOS
 // ==========================================
+
+// Tipo de cambio USD/BS
+const TIPO_CAMBIO = 6.96;
+
 async function handleSubmit(form, tabla, tipoRegistro) {
   const submitBtn = form.querySelector('.btn-submit');
   const formData = new FormData(form);
@@ -471,11 +475,11 @@ async function handleSubmit(form, tabla, tipoRegistro) {
   `;
 
   // Campos numéricos decimales
-  const camposDecimales = ['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'precio_costo', 'precio_venta', 'utilidad', 'monto_pendiente', 'porcentaje_cif'];
+  const camposDecimales = ['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'precio_costo', 'precio_venta', 'utilidad', 'monto_pendiente', 'presupuesto'];
   // Campos numéricos enteros
   const camposEnteros = ['anio', 'mes', 'automoviles', 'camionetas', 'suv', 'utilitarios', 'sin_mantenimiento', 'accidentados'];
-  // Campos booleanos
-  const camposBooleanos = ['es_anticipo'];
+  // Tablas que tienen es_anticipo
+  const tablasConAnticipo = ['staging_rentacar_ingresos', 'staging_interauto_ventas'];
 
   // Construir objeto de datos
   const datos = {};
@@ -484,19 +488,46 @@ async function handleSubmit(form, tabla, tipoRegistro) {
       datos[key] = parseFloat(value) || 0;
     } else if (camposEnteros.includes(key)) {
       datos[key] = parseInt(value, 10) || 0;
-    } else if (camposBooleanos.includes(key)) {
-      datos[key] = value === 'on' || value === 'true' || value === true;
+    } else if (key === 'es_anticipo') {
+      // Solo procesar es_anticipo si la tabla lo soporta
+      if (tablasConAnticipo.includes(tabla)) {
+        datos[key] = value === 'on' || value === 'true' || value === true;
+      }
     } else if (value !== '') {
       datos[key] = value;
     }
   });
 
-  // Manejar checkboxes no marcados
-  camposBooleanos.forEach(campo => {
-    if (!datos.hasOwnProperty(campo)) {
-      datos[campo] = false;
-    }
-  });
+  // Manejar checkbox es_anticipo no marcado (solo para tablas que lo tienen)
+  if (tablasConAnticipo.includes(tabla) && !datos.hasOwnProperty('es_anticipo')) {
+    datos.es_anticipo = false;
+  }
+
+  // ========== CONVERSIÓN AUTOMÁTICA BS/USD ==========
+  // Si hay ingreso_bs pero no ingreso_usd, calcular USD
+  if (datos.ingreso_bs && !datos.ingreso_usd) {
+    datos.ingreso_usd = parseFloat((datos.ingreso_bs / TIPO_CAMBIO).toFixed(2));
+  }
+  // Si hay ingreso_usd pero no ingreso_bs, calcular BS
+  if (datos.ingreso_usd && !datos.ingreso_bs) {
+    datos.ingreso_bs = parseFloat((datos.ingreso_usd * TIPO_CAMBIO).toFixed(2));
+  }
+
+  // Lo mismo para monto_bs/monto_usd
+  if (datos.monto_bs && !datos.monto_usd) {
+    datos.monto_usd = parseFloat((datos.monto_bs / TIPO_CAMBIO).toFixed(2));
+  }
+  if (datos.monto_usd && !datos.monto_bs) {
+    datos.monto_bs = parseFloat((datos.monto_usd * TIPO_CAMBIO).toFixed(2));
+  }
+
+  // Lo mismo para precio_bs/precio_usd
+  if (datos.precio_bs && !datos.precio_usd) {
+    datos.precio_usd = parseFloat((datos.precio_bs / TIPO_CAMBIO).toFixed(2));
+  }
+  if (datos.precio_usd && !datos.precio_bs) {
+    datos.precio_bs = parseFloat((datos.precio_usd * TIPO_CAMBIO).toFixed(2));
+  }
 
   // Agregar metadatos
   datos.created_at = new Date().toISOString();
