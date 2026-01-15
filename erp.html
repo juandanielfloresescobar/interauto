@@ -1777,6 +1777,497 @@
     .precio-card-value.venta {
       color: #22c55e;
     }
+
+    /* ========== KPI LEADS SECTION ========== */
+    .leads-kpi-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .kpi-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .kpi-card.destacado {
+      background: linear-gradient(135deg, rgba(180, 0, 26, 0.15), rgba(139, 0, 0, 0.15));
+      border-color: rgba(180, 0, 26, 0.3);
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .kpi-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-historico {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #a78bfa;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-historico:hover {
+      background: rgba(139, 92, 246, 0.25);
+    }
+
+    .btn-historico svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ========== MODAL EDITAR LEAD ========== */
+    .modal-lead-edit {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-lead-edit.active {
+      display: flex;
+    }
+
+    .modal-lead-content {
+      background: rgba(20, 25, 35, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalSlide 0.3s ease;
+    }
+
+    .modal-lead-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-lead-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-lead-body {
+      padding: 24px;
+    }
+
+    .lead-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .lead-info-item {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .lead-info-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .lead-info-value {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .lead-estado-section {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .lead-estado-title {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .lead-estado-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .lead-historial-section {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+
+    .lead-historial-title {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .historial-timeline {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .historial-entry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .historial-entry:last-child {
+      border-bottom: none;
+    }
+
+    .historial-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .historial-cambio {
+      flex: 1;
+    }
+
+    .historial-estados {
+      font-size: 0.85rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .historial-estados svg {
+      width: 14px;
+      height: 14px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .historial-meta {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 2px;
+    }
+
+    .modal-lead-footer {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-modal-cancel {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-modal-cancel:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-modal-save {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-modal-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(180, 0, 26, 0.3);
+    }
+
+    /* ========== MODAL PAGO POPUP ========== */
+    .modal-pago {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-pago.active {
+      display: flex;
+    }
+
+    .modal-pago-content {
+      background: rgba(20, 25, 35, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 450px;
+      animation: modalSlide 0.3s ease;
+    }
+
+    .modal-pago-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-pago-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-pago-body {
+      padding: 24px;
+    }
+
+    .pago-tipo-btns {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .pago-tipo-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .pago-tipo-btn.tipo-total {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .pago-tipo-btn.tipo-parcial {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .pago-tipo-btn.tipo-negociacion {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .pago-tipo-btn.selected {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .pago-tipo-btn.tipo-total.selected {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: #22c55e;
+    }
+
+    .pago-tipo-btn.tipo-parcial.selected {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: #fbbf24;
+    }
+
+    .pago-tipo-btn.tipo-negociacion.selected {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: #8b5cf6;
+    }
+
+    .pago-campo {
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .pago-campo.visible {
+      display: block;
+    }
+
+    .pago-campo label {
+      display: block;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .pago-campo input,
+    .pago-campo textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .pago-campo textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .pago-resumen {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .pago-resumen-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .pago-resumen-item:last-child {
+      border-bottom: none;
+    }
+
+    .pago-resumen-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85rem;
+    }
+
+    .pago-resumen-value {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .modal-pago-footer {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* ========== BTN EDITAR LEAD ========== */
+    .btn-editar-lead {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+    }
+
+    .btn-editar-lead:hover {
+      background: rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-editar-lead svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ========== SESSION EXPIRY BANNER ========== */
+    .session-expiry-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(180, 0, 26, 0.95));
+      color: #fff;
+      padding: 12px 20px;
+      text-align: center;
+      font-weight: 600;
+      z-index: 2000;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    .session-expiry-banner.show {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2615,6 +3106,7 @@
                   <option value="referido">Referido</option>
                   <option value="showroom">Showroom</option>
                   <option value="llamada_entrante">Llamada Entrante</option>
+                  <option value="call_center_toyosa">Call Center Toyosa</option>
                   <option value="feria">Feria/Evento</option>
                   <option value="otro">Otro</option>
                 </select>
@@ -2675,6 +3167,32 @@
             <div>
               <h2 class="erp-card-title">Seguimiento de Leads</h2>
               <p class="erp-card-subtitle">Gestione el estado de sus leads</p>
+            </div>
+          </div>
+
+          <!-- KPIs de Leads -->
+          <div class="leads-kpi-section" id="leads-kpi-section">
+            <div class="kpi-card destacado">
+              <div class="kpi-value" id="kpi-leads-mes">0</div>
+              <div class="kpi-label">Leads Este Mes</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-leads-pendientes">0</div>
+              <div class="kpi-label">Pendientes</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-leads-proceso">0</div>
+              <div class="kpi-label">En Proceso</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-leads-cerrados">0</div>
+              <div class="kpi-label">Cerrados Ganados</div>
+            </div>
+            <div class="kpi-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <button class="btn-historico" onclick="verHistoricoLeadsMensual()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Ver Histórico Mensual
+              </button>
             </div>
           </div>
 
@@ -2921,6 +3439,96 @@
 
   <!-- ========== TOAST CONTAINER ========== -->
   <div id="toast-container" class="toast-container"></div>
+
+  <!-- ========== BANNER EXPIRACIÓN SESIÓN ========== -->
+  <div id="session-expiry-banner" class="session-expiry-banner">
+    Su sesión expirará pronto. Por favor guarde su trabajo.
+  </div>
+
+  <!-- ========== MODAL EDITAR LEAD ========== -->
+  <div id="modal-lead-edit" class="modal-lead-edit">
+    <div class="modal-lead-content">
+      <div class="modal-lead-header">
+        <h3 class="modal-lead-title">Editar Estado del Lead</h3>
+        <button class="modal-close" onclick="cerrarModalEditLead()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-lead-body">
+        <div class="lead-info-grid" id="lead-info-grid">
+          <!-- Se llena dinámicamente -->
+        </div>
+        <div class="lead-estado-section">
+          <div class="lead-estado-title">Cambiar Estado</div>
+          <select class="lead-estado-select" id="modal-lead-estado">
+            <option value="pendiente_llamada">Pendiente para Llamada</option>
+            <option value="contactado">Contactado</option>
+            <option value="insistir">Insistir</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="cotizacion_enviada">Cotización Enviada</option>
+            <option value="negociacion">Negociación</option>
+            <option value="cerrado_ganado">Cerrado Ganado</option>
+            <option value="cerrado_perdido">Cerrado Perdido</option>
+            <option value="no_interesado">No Interesado</option>
+            <option value="no_contesta">No Contesta</option>
+          </select>
+        </div>
+        <div class="lead-historial-section">
+          <div class="lead-historial-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Historial de Cambios
+          </div>
+          <div class="historial-timeline" id="lead-historial-timeline">
+            <!-- Se llena dinámicamente -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-lead-footer">
+        <button class="btn-modal-cancel" onclick="cerrarModalEditLead()">Cancelar</button>
+        <button class="btn-modal-save" id="btn-guardar-lead">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODAL PAGO ========== -->
+  <div id="modal-pago" class="modal-pago">
+    <div class="modal-pago-content">
+      <div class="modal-pago-header">
+        <h3 class="modal-pago-title">Registrar Pago</h3>
+        <button class="modal-close" onclick="cerrarModalPago()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-pago-body">
+        <div class="pago-resumen" id="pago-resumen">
+          <!-- Se llena dinámicamente -->
+        </div>
+        <div class="pago-tipo-btns">
+          <button class="pago-tipo-btn tipo-total" onclick="seleccionarTipoPago('total')">
+            Pagado Total
+          </button>
+          <button class="pago-tipo-btn tipo-parcial" onclick="seleccionarTipoPago('parcial')">
+            Pago Parcial
+          </button>
+          <button class="pago-tipo-btn tipo-negociacion" onclick="seleccionarTipoPago('negociacion')">
+            Negociación
+          </button>
+        </div>
+        <div class="pago-campo" id="campo-monto-pagado">
+          <label>Monto Pagado (Bs)</label>
+          <input type="number" id="input-monto-pagado" placeholder="0.00" step="0.01" min="0" />
+        </div>
+        <div class="pago-campo" id="campo-detalle-negociacion">
+          <label>Detalle de la Negociación</label>
+          <textarea id="input-detalle-negociacion" placeholder="Describa los términos de la negociación..."></textarea>
+        </div>
+      </div>
+      <div class="modal-pago-footer">
+        <button class="btn-modal-cancel" onclick="cerrarModalPago()">Cancelar</button>
+        <button class="btn-modal-save" id="btn-confirmar-pago">Confirmar Pago</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="erp.js"></script>
 </body>

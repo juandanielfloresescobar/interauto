@@ -3,6 +3,15 @@
 -- Esquema: staging
 -- Ultima actualizacion: 2026-01-15
 -- ============================================
+-- FUNCIONALIDADES SOPORTADAS:
+-- - Auto-logout despues de 24 horas (manejo frontend)
+-- - KPIs de Leads (mes actual, pendientes, en proceso, cerrados)
+-- - Modal edicion de leads con historial de cambios
+-- - Fuente "Call Center Toyosa" en leads
+-- - Modal popup para pagos (total, parcial, negociacion)
+-- - Historial de cambios de estado de leads
+-- - Historial de pagos para auditoria
+-- ============================================
 
 -- Crear esquema si no existe
 CREATE SCHEMA IF NOT EXISTS staging;
