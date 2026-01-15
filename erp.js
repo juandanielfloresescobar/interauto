@@ -9,13 +9,14 @@
 const SUPABASE_URL = 'https://zzelbikylbbxclnskgkf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6ZWxiaWt5bGJieGNsbnNrZ2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MjA4NDMsImV4cCI6MjA4MTQ5Njg0M30.VGqblbw-vjQWUTpz8Xdhk5MNLyNniXvAO9moMWVAd8s';
 
-// Cliente principal para Auth
+// Cliente principal para Auth y operaciones
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Cliente para esquema STAGING
-const supabaseStaging = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  db: { schema: 'staging' },
-});
+// NOTA: Si tus tablas están en el esquema 'staging', descomenta esto:
+// const supabaseDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+//   db: { schema: 'staging' }
+// });
+// Y cambia 'supabase' por 'supabaseDB' en las funciones de insert/select
 
 // ==========================================
 // 2. MAPEO DE USUARIOS A TIPO
@@ -496,11 +497,12 @@ async function handleSubmit(form, tabla, tipoRegistro) {
   datos.status = 'pendiente';
   datos.updated_at = new Date().toISOString();
 
-  console.log('📤 Enviando datos a', tabla, ':', datos);
+  console.log('📤 Enviando datos a', tabla, ':', JSON.stringify(datos, null, 2));
 
   try {
-    // Usar .select() para confirmar que se guardó
-    const { data, error } = await supabaseStaging
+    // IMPORTANTE: Usar el cliente principal de supabase (esquema public)
+    // Si tus tablas están en 'staging', cambia esto
+    const { data, error } = await supabase
       .from(tabla)
       .insert([datos])
       .select();
@@ -509,11 +511,15 @@ async function handleSubmit(form, tabla, tipoRegistro) {
 
     if (error) {
       console.error('❌ Error Supabase:', error);
+      // Mostrar alerta con el error exacto
+      alert(`ERROR DE SUPABASE:\n\nCódigo: ${error.code}\nMensaje: ${error.message}\nDetalles: ${error.details || 'N/A'}\nHint: ${error.hint || 'N/A'}`);
       throw error;
     }
 
     if (!data || data.length === 0) {
-      throw new Error('No se recibió confirmación del servidor');
+      const msg = 'No se recibió confirmación del servidor. Los datos pueden no haberse guardado.';
+      alert(msg);
+      throw new Error(msg);
     }
 
     // Éxito - Animación de confirmación
@@ -526,8 +532,10 @@ async function handleSubmit(form, tabla, tipoRegistro) {
       ¡Guardado!
     `;
 
-    mostrarToast('success', '¡Registro guardado!', `${tipoRegistro} enviado correctamente. ID: ${data[0].id}`);
-    agregarNotificacion('success', `${tipoRegistro} guardado correctamente (ID: ${data[0].id})`);
+    // Mostrar éxito con ID
+    const registroId = data[0].id;
+    mostrarToast('success', '¡Registro guardado!', `${tipoRegistro} guardado. ID: ${registroId}`);
+    agregarNotificacion('success', `${tipoRegistro} guardado correctamente (ID: ${registroId})`);
 
     // Efecto visual de éxito en el formulario
     form.classList.add('form-success');
@@ -544,10 +552,10 @@ async function handleSubmit(form, tabla, tipoRegistro) {
       elementos.campoAnticipo.classList.remove('show');
     }
 
-    // Recargar lista de registros con animación
+    // Recargar lista de registros después de guardar
     setTimeout(() => {
       cargarRegistrosSegunTab(estado.tabActiva);
-    }, 500);
+    }, 800);
 
   } catch (error) {
     console.error('❌ Error al guardar:', error);
@@ -604,13 +612,14 @@ window.cargarRegistros = async function(tabla, containerId, conPago = false) {
   try {
     console.log('🔄 Cargando registros de', tabla);
 
-    const { data, error } = await supabaseStaging
+    // IMPORTANTE: Usar el cliente principal de supabase (esquema public)
+    const { data, error } = await supabase
       .from(tabla)
       .select('*')
       .order('created_at', { ascending: false })
       .limit(15);
 
-    console.log('📥 Registros recibidos:', data?.length || 0);
+    console.log('📥 Registros recibidos:', data?.length || 0, data);
 
     if (error) {
       console.error('❌ Error al cargar:', error);
@@ -731,7 +740,7 @@ function renderRegistro(registro, tabla, conPago, esNuevo = false) {
 
 window.marcarPagado = async function(tabla, id) {
   try {
-    const { error } = await supabaseStaging
+    const { error } = await supabase
       .from(tabla)
       .update({
         pagado: true,
@@ -928,7 +937,7 @@ async function cargarRegistrosLeads() {
   container.innerHTML = '<div class="registros-empty">Cargando leads...</div>';
 
   try {
-    const { data, error } = await supabaseStaging
+    const { data, error } = await supabase
       .from('staging_leads')
       .select('*')
       .order('created_at', { ascending: false })
@@ -1022,7 +1031,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
 
   try {
     // Primero obtener el estado actual para el historial
-    const { data: leadActual } = await supabaseStaging
+    const { data: leadActual } = await supabase
       .from('staging_leads')
       .select('estado_lead')
       .eq('id', id)
@@ -1031,7 +1040,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
     const estadoAnterior = leadActual?.estado_lead || 'desconocido';
 
     // Actualizar el lead
-    const { error } = await supabaseStaging
+    const { error } = await supabase
       .from('staging_leads')
       .update({
         estado_lead: nuevoEstado,
@@ -1043,7 +1052,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
     if (error) throw error;
 
     // Registrar en historial
-    await supabaseStaging
+    await supabase
       .from('staging_leads_historial')
       .insert({
         lead_id: id,
@@ -1066,7 +1075,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
 
 window.verHistorialLead = async function(id) {
   try {
-    const { data, error } = await supabaseStaging
+    const { data, error } = await supabase
       .from('staging_leads_historial')
       .select('*')
       .eq('lead_id', id)
@@ -1147,7 +1156,7 @@ async function cargarRegistrosStock() {
   container.innerHTML = '<div class="registros-empty">Cargando stock...</div>';
 
   try {
-    const { data, error } = await supabaseStaging
+    const { data, error } = await supabase
       .from('staging_jetour_stock')
       .select('*')
       .order('created_at', { ascending: false })
@@ -1246,7 +1255,7 @@ function renderStockItem(item) {
 window.actualizarEstadoStock = async function(id, nuevoEstado) {
   try {
     // Obtener estado actual para historial
-    const { data: stockActual } = await supabaseStaging
+    const { data: stockActual } = await supabase
       .from('staging_jetour_stock')
       .select('estado')
       .eq('id', id)
@@ -1266,7 +1275,7 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
       }
     }
 
-    const { error } = await supabaseStaging
+    const { error } = await supabase
       .from('staging_jetour_stock')
       .update({
         estado: nuevoEstado,
@@ -1279,7 +1288,7 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
     if (error) throw error;
 
     // Registrar en historial
-    await supabaseStaging
+    await supabase
       .from('staging_stock_historial')
       .insert({
         stock_id: id,
@@ -1302,7 +1311,7 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
 
 window.verHistorialStock = async function(id) {
   try {
-    const { data, error } = await supabaseStaging
+    const { data, error } = await supabase
       .from('staging_stock_historial')
       .select('*')
       .eq('stock_id', id)
@@ -1352,7 +1361,7 @@ async function cargarDashboardJetour() {
   if (!dashboardContainer) return;
 
   try {
-    const { data, error } = await supabaseStaging
+    const { data, error } = await supabase
       .from('staging_jetour_stock')
       .select('*');
 
@@ -1551,7 +1560,7 @@ async function cargarFlotaMensual() {
   container.innerHTML = '<div class="registros-empty">Cargando flota...</div>';
 
   try {
-    const { data, error } = await supabaseStaging
+    const { data, error } = await supabase
       .from('staging_rentacar_flota')
       .select('*')
       .order('anio', { ascending: false })
