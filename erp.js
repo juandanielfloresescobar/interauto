@@ -350,6 +350,14 @@ function mostrarDashboard(userRole) {
       cambiarTab('jetour-stock');
       break;
   }
+
+  // Mostrar indicador de conexión en tiempo real
+  setTimeout(() => {
+    const indicator = document.getElementById('realtime-indicator');
+    if (indicator) {
+      indicator.classList.add('show');
+    }
+  }, 1000);
 }
 
 function cambiarTab(tabId) {
@@ -444,8 +452,9 @@ async function handleSubmit(form, tabla, tipoRegistro) {
   const submitBtn = form.querySelector('.btn-submit');
   const formData = new FormData(form);
 
-  // Deshabilitar botón
+  // Deshabilitar botón y mostrar estado de carga
   submitBtn.disabled = true;
+  submitBtn.classList.add('loading');
   submitBtn.innerHTML = `
     <svg class="spin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
@@ -453,23 +462,33 @@ async function handleSubmit(form, tabla, tipoRegistro) {
     Guardando...
   `;
 
+  // Campos numéricos decimales
+  const camposDecimales = ['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'precio_costo', 'precio_venta', 'utilidad', 'monto_pendiente', 'porcentaje_cif'];
+  // Campos numéricos enteros
+  const camposEnteros = ['anio', 'mes', 'automoviles', 'camionetas', 'suv', 'utilitarios', 'sin_mantenimiento', 'accidentados'];
+  // Campos booleanos
+  const camposBooleanos = ['es_anticipo'];
+
   // Construir objeto de datos
   const datos = {};
   formData.forEach((value, key) => {
-    // Convertir números
-    if (['ingreso_bs', 'ingreso_usd', 'monto_bs', 'monto_usd', 'precio_bs', 'precio_usd', 'utilidad', 'monto_pendiente'].includes(key)) {
+    if (camposDecimales.includes(key)) {
       datos[key] = parseFloat(value) || 0;
-    } else if (key === 'es_anticipo') {
-      datos[key] = value === 'on';
-    } else {
+    } else if (camposEnteros.includes(key)) {
+      datos[key] = parseInt(value, 10) || 0;
+    } else if (camposBooleanos.includes(key)) {
+      datos[key] = value === 'on' || value === 'true' || value === true;
+    } else if (value !== '') {
       datos[key] = value;
     }
   });
 
-  // Manejar checkbox que no está marcado
-  if (!datos.hasOwnProperty('es_anticipo')) {
-    datos.es_anticipo = false;
-  }
+  // Manejar checkboxes no marcados
+  camposBooleanos.forEach(campo => {
+    if (!datos.hasOwnProperty(campo)) {
+      datos[campo] = false;
+    }
+  });
 
   // Agregar metadatos
   datos.created_at = new Date().toISOString();
@@ -477,16 +496,43 @@ async function handleSubmit(form, tabla, tipoRegistro) {
   datos.status = 'pendiente';
   datos.updated_at = new Date().toISOString();
 
+  console.log('📤 Enviando datos a', tabla, ':', datos);
+
   try {
+    // Usar .select() para confirmar que se guardó
     const { data, error } = await supabaseStaging
       .from(tabla)
-      .insert([datos]);
+      .insert([datos])
+      .select();
 
-    if (error) throw error;
+    console.log('📥 Respuesta Supabase:', { data, error });
 
-    // Éxito
-    mostrarToast('success', '¡Registro guardado!', `${tipoRegistro} enviado para validación.`);
-    agregarNotificacion('success', `${tipoRegistro} guardado correctamente`);
+    if (error) {
+      console.error('❌ Error Supabase:', error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error('No se recibió confirmación del servidor');
+    }
+
+    // Éxito - Animación de confirmación
+    submitBtn.classList.remove('loading');
+    submitBtn.classList.add('success');
+    submitBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      ¡Guardado!
+    `;
+
+    mostrarToast('success', '¡Registro guardado!', `${tipoRegistro} enviado correctamente. ID: ${data[0].id}`);
+    agregarNotificacion('success', `${tipoRegistro} guardado correctamente (ID: ${data[0].id})`);
+
+    // Efecto visual de éxito en el formulario
+    form.classList.add('form-success');
+    setTimeout(() => form.classList.remove('form-success'), 1000);
+
     form.reset();
 
     // Restaurar valores por defecto
@@ -498,22 +544,37 @@ async function handleSubmit(form, tabla, tipoRegistro) {
       elementos.campoAnticipo.classList.remove('show');
     }
 
-    // Recargar lista de registros
-    cargarRegistrosSegunTab(estado.tabActiva);
+    // Recargar lista de registros con animación
+    setTimeout(() => {
+      cargarRegistrosSegunTab(estado.tabActiva);
+    }, 500);
 
   } catch (error) {
-    console.error('Error al guardar:', error);
+    console.error('❌ Error al guardar:', error);
+
+    submitBtn.classList.remove('loading');
+    submitBtn.classList.add('error');
+    submitBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      Error
+    `;
+
     mostrarToast('error', 'Error al guardar', error.message || 'Intente nuevamente');
     agregarNotificacion('error', `Error al guardar ${tipoRegistro}: ${error.message}`);
   } finally {
-    // Restaurar botón
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/>
-      </svg>
-      Guardar Registro
-    `;
+    // Restaurar botón después de 2 segundos
+    setTimeout(() => {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading', 'success', 'error');
+      submitBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/>
+        </svg>
+        Guardar Registro
+      `;
+    }, 2000);
   }
 }
 
@@ -527,35 +588,77 @@ function limpiarTodosLosFormularios() {
 // ==========================================
 // 10. CARGAR LISTA DE REGISTROS
 // ==========================================
+// Guardar IDs conocidos para detectar nuevos
+let registrosConocidos = {};
+
 window.cargarRegistros = async function(tabla, containerId, conPago = false) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  container.innerHTML = '<div class="registros-empty">Cargando registros...</div>';
+  // Mostrar estado de carga
+  container.classList.add('loading');
+  if (container.innerHTML.trim() === '' || container.querySelector('.registros-empty')) {
+    container.innerHTML = '<div class="registros-empty"><span class="spin-text">Cargando registros...</span></div>';
+  }
 
   try {
+    console.log('🔄 Cargando registros de', tabla);
+
     const { data, error } = await supabaseStaging
       .from(tabla)
       .select('*')
       .order('created_at', { ascending: false })
       .limit(15);
 
-    if (error) throw error;
+    console.log('📥 Registros recibidos:', data?.length || 0);
+
+    if (error) {
+      console.error('❌ Error al cargar:', error);
+      throw error;
+    }
+
+    container.classList.remove('loading');
 
     if (!data || data.length === 0) {
       container.innerHTML = '<div class="registros-empty">No hay registros aún</div>';
       return;
     }
 
-    container.innerHTML = data.map(registro => renderRegistro(registro, tabla, conPago)).join('');
+    // Detectar registros nuevos
+    const idsAnteriores = registrosConocidos[tabla] || [];
+    const nuevosIds = data.map(r => r.id);
+
+    container.innerHTML = data.map((registro, index) => {
+      const esNuevo = !idsAnteriores.includes(registro.id) && idsAnteriores.length > 0;
+      return renderRegistro(registro, tabla, conPago, esNuevo);
+    }).join('');
+
+    // Actualizar IDs conocidos
+    registrosConocidos[tabla] = nuevosIds;
+
+    // Mostrar indicador de actualización
+    mostrarIndicadorActualizacion();
 
   } catch (error) {
-    console.error('Error al cargar registros:', error);
-    container.innerHTML = '<div class="registros-empty">Error al cargar registros</div>';
+    console.error('❌ Error al cargar registros:', error);
+    container.classList.remove('loading');
+    container.innerHTML = `<div class="registros-empty">Error al cargar: ${error.message}</div>`;
   }
 };
 
-function renderRegistro(registro, tabla, conPago) {
+function mostrarIndicadorActualizacion() {
+  const indicator = document.getElementById('realtime-indicator');
+  if (indicator) {
+    indicator.classList.add('show');
+    indicator.querySelector('span').textContent = 'Sincronizado';
+
+    setTimeout(() => {
+      indicator.querySelector('span').textContent = 'Conectado';
+    }, 2000);
+  }
+}
+
+function renderRegistro(registro, tabla, conPago, esNuevo = false) {
   let titulo = '';
   let meta = '';
 
@@ -563,7 +666,8 @@ function renderRegistro(registro, tabla, conPago) {
   switch (tabla) {
     case 'staging_rentacar_ingresos':
       titulo = registro.nombre_ingreso || `Ingreso ${registro.anio}-${registro.mes}`;
-      meta = `Bs ${formatNumber(registro.ingreso_bs)} | $${formatNumber(registro.ingreso_usd)}`;
+      const anticipoTag = registro.es_anticipo ? '<span class="tag-anticipo">ANTICIPO</span>' : '';
+      meta = `${anticipoTag}Bs ${formatNumber(registro.ingreso_bs)} | $${formatNumber(registro.ingreso_usd)}`;
       break;
     case 'staging_rentacar_cobranzas':
       titulo = registro.cliente || 'Cliente';
@@ -590,6 +694,7 @@ function renderRegistro(registro, tabla, conPago) {
   const fechaCreacion = formatearFechaCorta(registro.created_at);
   const fechaUpdate = registro.updated_at ? formatearFechaCorta(registro.updated_at) : fechaCreacion;
   const statusClass = registro.pagado ? 'pagado' : registro.status;
+  const nuevoClass = esNuevo ? ' new' : '';
 
   let accionesHTML = '';
   if (conPago && !registro.pagado) {
@@ -609,7 +714,7 @@ function renderRegistro(registro, tabla, conPago) {
   }
 
   return `
-    <div class="registro-item">
+    <div class="registro-item${nuevoClass}">
       <div class="registro-info">
         <div class="registro-titulo">${titulo}</div>
         <div class="registro-meta">
