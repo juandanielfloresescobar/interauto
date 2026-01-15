@@ -23,32 +23,32 @@ const supabaseDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 const USER_ROLES = {
   'pablo.toro@saavrentacar.com': {
     modulos: ['rentacar'],
-    nombre: 'Rent a Car Admin',
+    nombre: 'Pablo Toro',
     permisos: ['ver', 'crear', 'editar']
   },
   'daniela.eguez@groupsaa.com': {
-    modulos: ['interauto', 'leads'],
-    nombre: 'Interauto Admin',
+    modulos: ['interauto', 'leads', 'stock'],
+    nombre: 'Daniela Eguez',
     permisos: ['ver', 'crear', 'editar']
   },
   'yngrid.numbela@groupsaa.com': {
     modulos: ['leads'],
-    nombre: 'Leads Manager',
+    nombre: 'Leads & Marketing Manager',
     permisos: ['ver']
   },
   'diego.zapata@groupsaa.com': {
     modulos: ['ejecutivo_leads'],
-    nombre: 'Ejecutivo de Leads',
+    nombre: 'Ejecutivo de Ventas',
     permisos: ['ver', 'crear', 'editar']
   },
   'juan.flores@groupsaa.com': {
-    modulos: ['jetour', 'interauto'],
+    modulos: ['jetour', 'interauto', 'leads','rentacar' ],
     nombre: 'Stock Jetour',
     permisos: ['ver', 'crear', 'editar']
   },
   'german.decebal@groupsaa.com': {
     modulos: ['leads'],
-    nombre: 'Leads Manager',
+    nombre: 'Call Center Manager',
     permisos: ['ver']
   }
 };
