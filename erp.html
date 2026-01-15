@@ -1511,6 +1511,272 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    /* ========== PANTALLA DE SELECCIÓN ========== */
+    .selection-screen {
+      min-height: 100vh;
+      background: var(--dark-bg-gradient);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .selection-screen.active {
+      display: flex;
+    }
+
+    .selection-title {
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .selection-subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1rem;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .selection-card {
+      background: rgba(15, 20, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 32px 28px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .selection-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 15px 40px rgba(180, 0, 26, 0.2);
+    }
+
+    .selection-card-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .selection-card-icon svg {
+      width: 32px;
+      height: 32px;
+      color: #fff;
+    }
+
+    .selection-card-title {
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .selection-card-desc {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+    }
+
+    .selection-logout {
+      margin-top: 40px;
+    }
+
+    /* ========== BOTÓN CONVERSIÓN ========== */
+    .btn-convert {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-convert:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-convert svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .input-with-convert {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .input-with-convert .form-group-erp {
+      flex: 1;
+    }
+
+    /* ========== BOTONES DE PAGO ========== */
+    .registro-payment-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-pago {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-pago-total {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .btn-pago-total:hover {
+      background: rgba(34, 197, 94, 0.25);
+    }
+
+    .btn-pago-parcial {
+      background: rgba(251, 191, 36, 0.15);
+      border-color: rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+    }
+
+    .btn-pago-parcial:hover {
+      background: rgba(251, 191, 36, 0.25);
+    }
+
+    .btn-pago-negociacion {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #8b5cf6;
+    }
+
+    .btn-pago-negociacion:hover {
+      background: rgba(139, 92, 246, 0.25);
+    }
+
+    .pago-info {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
+    .pago-info.parcial {
+      color: #fbbf24;
+    }
+
+    .pago-info.negociacion {
+      color: #8b5cf6;
+    }
+
+    /* ========== ESTADOS DE PAGO MEJORADOS ========== */
+    .registro-status.pagado_total {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .registro-status.pagado_parcial {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .registro-status.negociacion {
+      background: rgba(139, 92, 246, 0.2);
+      color: #8b5cf6;
+    }
+
+    /* ========== MAYÚSCULAS EN INPUTS ========== */
+    .erp-input,
+    .erp-textarea {
+      text-transform: uppercase;
+    }
+
+    .erp-input::placeholder,
+    .erp-textarea::placeholder {
+      text-transform: none;
+    }
+
+    /* ========== ESTILOS STOCK MEJORADOS ========== */
+    .stock-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .stock-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .precio-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .precio-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .precio-card-label {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .precio-card-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .precio-card-value.cif {
+      color: #3b82f6;
+    }
+
+    .precio-card-value.venta {
+      color: #22c55e;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1539,6 +1805,28 @@
         </div>
         <button type="submit" class="btn-login" id="btn-login">Iniciar Sesión</button>
       </form>
+    </div>
+  </section>
+
+  <!-- ========== PANTALLA DE SELECCIÓN ========== -->
+  <section id="selection-screen" class="selection-screen">
+    <img src="groupsaa.png" alt="Grupo SAA" class="login-logo" style="margin-bottom: 24px;" onerror="this.src='logo.png'" />
+    <h1 class="selection-title" id="selection-title">Seleccione un Módulo</h1>
+    <p class="selection-subtitle" id="selection-subtitle">Tiene acceso a los siguientes módulos</p>
+
+    <div id="selection-grid" class="selection-grid">
+      <!-- Se llena dinámicamente según permisos -->
+    </div>
+
+    <div class="selection-logout">
+      <button class="btn-logout" id="btn-logout-selection">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16,17 21,12 16,7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Cerrar Sesión
+      </button>
     </div>
   </section>
 
@@ -1625,6 +1913,13 @@
             <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
           <span>Ingresos Facturados</span>
+        </button>
+        <button class="erp-tab" data-tab="interauto-stock">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/>
+            <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+          </svg>
+          <span>Stock Jetour</span>
         </button>
       </div>
 
@@ -1827,13 +2122,23 @@
             </div>
 
             <div class="form-row">
-              <div class="form-group-erp">
-                <label>Monto (Bs) <span class="required">*</span></label>
-                <input type="number" class="erp-input" name="monto_bs" placeholder="0.00" step="0.01" min="0" required />
+              <div class="input-with-convert">
+                <div class="form-group-erp">
+                  <label>Monto (Bs) <span class="required">*</span></label>
+                  <input type="number" class="erp-input" name="monto_bs" id="cobranza-monto-bs" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <button type="button" class="btn-convert" onclick="convertirMoneda('cobranza-monto-bs', 'cobranza-monto-usd', 'bs-to-usd')" title="Convertir a USD">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
               </div>
-              <div class="form-group-erp">
-                <label>Monto (USD) <span class="required">*</span></label>
-                <input type="number" class="erp-input" name="monto_usd" placeholder="0.00" step="0.01" min="0" required />
+              <div class="input-with-convert">
+                <div class="form-group-erp">
+                  <label>Monto (USD) <span class="required">*</span></label>
+                  <input type="number" class="erp-input" name="monto_usd" id="cobranza-monto-usd" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <button type="button" class="btn-convert" onclick="convertirMoneda('cobranza-monto-usd', 'cobranza-monto-bs', 'usd-to-bs')" title="Convertir a Bs">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                </button>
               </div>
             </div>
 
@@ -1850,7 +2155,7 @@
             <div class="registros-header">
               <h3 class="registros-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                Últimos Registros
+                Historial de Cuentas
               </h3>
               <button class="btn-refresh" onclick="cargarRegistros('staging_rentacar_cobranzas', 'list-rc-cobranzas', true)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
@@ -1881,7 +2186,11 @@
           </div>
 
           <form id="form-rc-flota">
-            <div class="form-row">
+            <div class="form-row form-row-3">
+              <div class="form-group-erp">
+                <label>Fecha de Reporte <span class="required">*</span></label>
+                <input type="date" class="erp-input" name="fecha_reporte" required />
+              </div>
               <div class="form-group-erp">
                 <label>Año <span class="required">*</span></label>
                 <select class="erp-select" name="anio" required>
@@ -2028,17 +2337,30 @@
               </div>
             </div>
 
-            <div class="form-row form-row-3">
-              <div class="form-group-erp">
-                <label>Precio Venta (USD) <span class="required">*</span></label>
-                <input type="number" class="erp-input" name="precio_usd" placeholder="0.00" step="0.01" min="0" required />
+            <div class="form-row">
+              <div class="input-with-convert">
+                <div class="form-group-erp">
+                  <label>Precio Venta (USD) <span class="required">*</span></label>
+                  <input type="number" class="erp-input" name="precio_usd" id="venta-precio-usd" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <button type="button" class="btn-convert" onclick="convertirMoneda('venta-precio-usd', 'venta-precio-bs', 'usd-to-bs')" title="Convertir a Bs">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
               </div>
-              <div class="form-group-erp">
-                <label>Precio Venta (Bs) <span class="required">*</span></label>
-                <input type="number" class="erp-input" name="precio_bs" placeholder="0.00" step="0.01" min="0" required />
+              <div class="input-with-convert">
+                <div class="form-group-erp">
+                  <label>Precio Venta (Bs) <span class="required">*</span></label>
+                  <input type="number" class="erp-input" name="precio_bs" id="venta-precio-bs" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <button type="button" class="btn-convert" onclick="convertirMoneda('venta-precio-bs', 'venta-precio-usd', 'bs-to-usd')" title="Convertir a USD">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                </button>
               </div>
+            </div>
+
+            <div class="form-row">
               <div class="form-group-erp">
-                <label>Utilidad (USD) <span class="required">*</span></label>
+                <label>Utilidad (Bs) <span class="required">*</span></label>
                 <input type="number" class="erp-input" name="utilidad" placeholder="0.00" step="0.01" min="0" required />
               </div>
             </div>
@@ -2175,6 +2497,28 @@
             <div id="list-ia-ingresos" class="registros-list">
               <div class="registros-empty">Cargando registros...</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Jetour para Interauto -->
+      <div id="form-interauto-stock" class="erp-form-container">
+        <div class="erp-card">
+          <div class="erp-card-header">
+            <div class="erp-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"/>
+                <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="erp-card-title">Stock Jetour Disponible</h2>
+              <p class="erp-card-subtitle">Vehículos disponibles para venta</p>
+            </div>
+          </div>
+
+          <div id="list-interauto-stock" class="stock-list">
+            <div class="registros-empty">Cargando stock...</div>
           </div>
         </div>
       </div>
@@ -2403,31 +2747,36 @@
               </div>
               <div class="form-group-erp">
                 <label>Color <span class="required">*</span></label>
-                <select class="erp-select" name="color" required>
-                  <option value="">Seleccionar...</option>
-                  <option value="Blanco">Blanco</option>
-                  <option value="Negro">Negro</option>
-                  <option value="Gris">Gris</option>
-                  <option value="Plata">Plata</option>
-                  <option value="Rojo">Rojo</option>
-                  <option value="Azul">Azul</option>
-                  <option value="Verde">Verde</option>
-                  <option value="Dorado">Dorado</option>
-                </select>
+                <input type="text" class="erp-input" name="color" placeholder="Ej: Blanco Perla" required />
               </div>
             </div>
 
-            <div class="form-row form-row-3">
+            <div class="form-row">
               <div class="form-group-erp">
-                <label>Precio Costo (USD) <span class="required">*</span></label>
+                <label>Precio CIF (USD) <span class="required">*</span></label>
                 <input type="number" class="erp-input" name="precio_costo" placeholder="0.00" step="0.01" min="0" required />
               </div>
+            </div>
+
+            <h4 style="color: rgba(255,255,255,0.8); margin: 20px 0 16px; font-size: 0.9rem;">Precios de Venta (USD)</h4>
+            <div class="form-row form-row-3">
               <div class="form-group-erp">
-                <label>Precio Venta (USD) <span class="required">*</span></label>
-                <input type="number" class="erp-input" name="precio_venta" placeholder="0.00" step="0.01" min="0" required />
+                <label>Cliente Final <span class="required">*</span></label>
+                <input type="number" class="erp-input" name="precio_cliente_final" placeholder="0.00" step="0.01" min="0" required />
               </div>
               <div class="form-group-erp">
-                <label>Margen Calculado</label>
+                <label>Mayorista</label>
+                <input type="number" class="erp-input" name="precio_mayorista" placeholder="0.00" step="0.01" min="0" />
+              </div>
+              <div class="form-group-erp">
+                <label>Empresa del Grupo</label>
+                <input type="number" class="erp-input" name="precio_grupo" placeholder="0.00" step="0.01" min="0" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group-erp">
+                <label>Margen Calculado (vs CIF)</label>
                 <input type="text" class="erp-input" id="margen-calculado" placeholder="--%" readonly style="background: rgba(255,255,255,0.02);" />
               </div>
             </div>
@@ -2435,16 +2784,7 @@
             <div class="form-row">
               <div class="form-group-erp">
                 <label>Ubicación <span class="required">*</span></label>
-                <select class="erp-select" name="ubicacion" required>
-                  <option value="">Seleccionar...</option>
-                  <option value="Showroom Santa Cruz">Showroom Santa Cruz</option>
-                  <option value="Showroom La Paz">Showroom La Paz</option>
-                  <option value="Showroom Cochabamba">Showroom Cochabamba</option>
-                  <option value="Almacén Central">Almacén Central</option>
-                  <option value="En Puerto">En Puerto</option>
-                  <option value="En Tránsito Marítimo">En Tránsito Marítimo</option>
-                  <option value="En Tránsito Terrestre">En Tránsito Terrestre</option>
-                </select>
+                <input type="text" class="erp-input" name="ubicacion" placeholder="Ej: Showroom Santa Cruz" required />
               </div>
               <div class="form-group-erp">
                 <label>Estado <span class="required">*</span></label>
