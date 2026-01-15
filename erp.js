@@ -9,14 +9,13 @@
 const SUPABASE_URL = 'https://zzelbikylbbxclnskgkf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6ZWxiaWt5bGJieGNsbnNrZ2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MjA4NDMsImV4cCI6MjA4MTQ5Njg0M30.VGqblbw-vjQWUTpz8Xdhk5MNLyNniXvAO9moMWVAd8s';
 
-// Cliente principal para Auth y operaciones
+// Cliente principal para Auth
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// NOTA: Si tus tablas están en el esquema 'staging', descomenta esto:
-// const supabaseDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-//   db: { schema: 'staging' }
-// });
-// Y cambia 'supabase' por 'supabaseDB' en las funciones de insert/select
+// Cliente para operaciones de BD (esquema staging)
+const supabaseDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  db: { schema: 'staging' }
+});
 
 // ==========================================
 // 2. MAPEO DE USUARIOS A TIPO
@@ -500,9 +499,8 @@ async function handleSubmit(form, tabla, tipoRegistro) {
   console.log('📤 Enviando datos a', tabla, ':', JSON.stringify(datos, null, 2));
 
   try {
-    // IMPORTANTE: Usar el cliente principal de supabase (esquema public)
-    // Si tus tablas están en 'staging', cambia esto
-    const { data, error } = await supabase
+    // Usar cliente con esquema staging
+    const { data, error } = await supabaseDB
       .from(tabla)
       .insert([datos])
       .select();
@@ -612,8 +610,8 @@ window.cargarRegistros = async function(tabla, containerId, conPago = false) {
   try {
     console.log('🔄 Cargando registros de', tabla);
 
-    // IMPORTANTE: Usar el cliente principal de supabase (esquema public)
-    const { data, error } = await supabase
+    // Usar cliente con esquema staging
+    const { data, error } = await supabaseDB
       .from(tabla)
       .select('*')
       .order('created_at', { ascending: false })
@@ -740,7 +738,7 @@ function renderRegistro(registro, tabla, conPago, esNuevo = false) {
 
 window.marcarPagado = async function(tabla, id) {
   try {
-    const { error } = await supabase
+    const { error } = await supabaseDB
       .from(tabla)
       .update({
         pagado: true,
@@ -937,7 +935,7 @@ async function cargarRegistrosLeads() {
   container.innerHTML = '<div class="registros-empty">Cargando leads...</div>';
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseDB
       .from('staging_leads')
       .select('*')
       .order('created_at', { ascending: false })
@@ -1031,7 +1029,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
 
   try {
     // Primero obtener el estado actual para el historial
-    const { data: leadActual } = await supabase
+    const { data: leadActual } = await supabaseDB
       .from('staging_leads')
       .select('estado_lead')
       .eq('id', id)
@@ -1040,7 +1038,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
     const estadoAnterior = leadActual?.estado_lead || 'desconocido';
 
     // Actualizar el lead
-    const { error } = await supabase
+    const { error } = await supabaseDB
       .from('staging_leads')
       .update({
         estado_lead: nuevoEstado,
@@ -1052,7 +1050,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
     if (error) throw error;
 
     // Registrar en historial
-    await supabase
+    await supabaseDB
       .from('staging_leads_historial')
       .insert({
         lead_id: id,
@@ -1075,7 +1073,7 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
 
 window.verHistorialLead = async function(id) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseDB
       .from('staging_leads_historial')
       .select('*')
       .eq('lead_id', id)
@@ -1156,7 +1154,7 @@ async function cargarRegistrosStock() {
   container.innerHTML = '<div class="registros-empty">Cargando stock...</div>';
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseDB
       .from('staging_jetour_stock')
       .select('*')
       .order('created_at', { ascending: false })
@@ -1255,7 +1253,7 @@ function renderStockItem(item) {
 window.actualizarEstadoStock = async function(id, nuevoEstado) {
   try {
     // Obtener estado actual para historial
-    const { data: stockActual } = await supabase
+    const { data: stockActual } = await supabaseDB
       .from('staging_jetour_stock')
       .select('estado')
       .eq('id', id)
@@ -1275,7 +1273,7 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseDB
       .from('staging_jetour_stock')
       .update({
         estado: nuevoEstado,
@@ -1288,7 +1286,7 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
     if (error) throw error;
 
     // Registrar en historial
-    await supabase
+    await supabaseDB
       .from('staging_stock_historial')
       .insert({
         stock_id: id,
@@ -1311,7 +1309,7 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
 
 window.verHistorialStock = async function(id) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseDB
       .from('staging_stock_historial')
       .select('*')
       .eq('stock_id', id)
@@ -1361,7 +1359,7 @@ async function cargarDashboardJetour() {
   if (!dashboardContainer) return;
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseDB
       .from('staging_jetour_stock')
       .select('*');
 
@@ -1560,7 +1558,7 @@ async function cargarFlotaMensual() {
   container.innerHTML = '<div class="registros-empty">Cargando flota...</div>';
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseDB
       .from('staging_rentacar_flota')
       .select('*')
       .order('anio', { ascending: false })
