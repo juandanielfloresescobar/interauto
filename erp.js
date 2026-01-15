@@ -441,8 +441,16 @@ function cerrarConfirmacion() {
 async function confirmarEnvio() {
   if (!estado.formPendiente) return;
 
+  // Guardar referencias ANTES de limpiar
+  const form = estado.formPendiente;
+  const tabla = estado.tablaPendiente;
+  const tipoRegistro = estado.tipoRegistroPendiente;
+
+  // Cerrar modal (esto limpia estado.formPendiente)
   cerrarConfirmacion();
-  await handleSubmit(estado.formPendiente, estado.tablaPendiente, estado.tipoRegistroPendiente);
+
+  // Usar las referencias guardadas
+  await handleSubmit(form, tabla, tipoRegistro);
 }
 
 // ==========================================
