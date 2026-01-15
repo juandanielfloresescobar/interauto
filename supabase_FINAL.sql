@@ -263,25 +263,58 @@ ALTER TABLE staging.staging_stock_historial ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staging.staging_pagos_historial ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
--- POLITICAS RLS (Permitir todo para usuarios autenticados)
+-- POLITICAS RLS - Para authenticated Y anon
 -- ============================================
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_rentacar_ingresos FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_rentacar_cobranzas FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_rentacar_flota FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_interauto_ventas FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_interauto_ingresos FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_leads FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_leads_historial FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_jetour_stock FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_stock_historial FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON staging.staging_pagos_historial FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- Rent a Car Ingresos
+CREATE POLICY "authenticated_all_rentacar_ingresos" ON staging.staging_rentacar_ingresos FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_rentacar_ingresos" ON staging.staging_rentacar_ingresos FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Rent a Car Cobranzas
+CREATE POLICY "authenticated_all_rentacar_cobranzas" ON staging.staging_rentacar_cobranzas FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_rentacar_cobranzas" ON staging.staging_rentacar_cobranzas FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Rent a Car Flota
+CREATE POLICY "authenticated_all_rentacar_flota" ON staging.staging_rentacar_flota FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_rentacar_flota" ON staging.staging_rentacar_flota FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Interauto Ventas
+CREATE POLICY "authenticated_all_interauto_ventas" ON staging.staging_interauto_ventas FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_interauto_ventas" ON staging.staging_interauto_ventas FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Interauto Ingresos
+CREATE POLICY "authenticated_all_interauto_ingresos" ON staging.staging_interauto_ingresos FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_interauto_ingresos" ON staging.staging_interauto_ingresos FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Leads
+CREATE POLICY "authenticated_all_leads" ON staging.staging_leads FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_leads" ON staging.staging_leads FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Leads Historial
+CREATE POLICY "authenticated_all_leads_historial" ON staging.staging_leads_historial FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_leads_historial" ON staging.staging_leads_historial FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Jetour Stock
+CREATE POLICY "authenticated_all_jetour_stock" ON staging.staging_jetour_stock FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_jetour_stock" ON staging.staging_jetour_stock FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Stock Historial
+CREATE POLICY "authenticated_all_stock_historial" ON staging.staging_stock_historial FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_stock_historial" ON staging.staging_stock_historial FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Pagos Historial
+CREATE POLICY "authenticated_all_pagos_historial" ON staging.staging_pagos_historial FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all_pagos_historial" ON staging.staging_pagos_historial FOR ALL TO anon USING (true) WITH CHECK (true);
 
 -- ============================================
--- PERMISOS ANON (para la aplicacion)
+-- PERMISOS - SCHEMA Y TABLAS
 -- ============================================
-GRANT USAGE ON SCHEMA staging TO anon;
-GRANT ALL ON ALL TABLES IN SCHEMA staging TO anon;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA staging TO anon;
+GRANT USAGE ON SCHEMA staging TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA staging TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA staging TO anon, authenticated;
+
+-- Permisos por defecto para nuevas tablas
+ALTER DEFAULT PRIVILEGES IN SCHEMA staging GRANT ALL ON TABLES TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA staging GRANT ALL ON SEQUENCES TO anon, authenticated;
 
 -- ============================================
 -- FIN DEL SCRIPT
