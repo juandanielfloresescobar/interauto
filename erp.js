@@ -2060,3 +2060,713 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// ==========================================
+// 23. AUTO-LOGOUT DESPUÉS DE 24 HORAS
+// ==========================================
+const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+const WARNING_BEFORE_EXPIRY = 30 * 60 * 1000; // Avisar 30 minutos antes
+let sessionCheckInterval = null;
+
+function inicializarControlSesion() {
+  const loginTime = localStorage.getItem('erp_login_time');
+
+  if (!loginTime) {
+    // Registrar hora de inicio de sesión
+    localStorage.setItem('erp_login_time', Date.now().toString());
+  }
+
+  // Verificar cada minuto
+  if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+  sessionCheckInterval = setInterval(verificarExpiracionSesion, 60000);
+
+  // Verificar inmediatamente
+  verificarExpiracionSesion();
+}
+
+function verificarExpiracionSesion() {
+  const loginTime = parseInt(localStorage.getItem('erp_login_time') || '0');
+  if (loginTime === 0) return;
+
+  const ahora = Date.now();
+  const tiempoTranscurrido = ahora - loginTime;
+  const tiempoRestante = SESSION_DURATION - tiempoTranscurrido;
+
+  const banner = document.getElementById('session-expiry-banner');
+
+  if (tiempoRestante <= 0) {
+    // Sesión expirada - cerrar sesión
+    localStorage.removeItem('erp_login_time');
+    if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+
+    alert('Su sesión ha expirado después de 24 horas. Por favor inicie sesión nuevamente.');
+    handleLogout();
+
+  } else if (tiempoRestante <= WARNING_BEFORE_EXPIRY) {
+    // Mostrar advertencia
+    const minutosRestantes = Math.floor(tiempoRestante / 60000);
+    if (banner) {
+      banner.textContent = `Su sesión expirará en ${minutosRestantes} minutos. Por favor guarde su trabajo.`;
+      banner.classList.add('show');
+    }
+  } else {
+    // Ocultar banner si existe
+    if (banner) banner.classList.remove('show');
+  }
+}
+
+// Limpiar al hacer logout
+function limpiarControlSesion() {
+  localStorage.removeItem('erp_login_time');
+  if (sessionCheckInterval) {
+    clearInterval(sessionCheckInterval);
+    sessionCheckInterval = null;
+  }
+}
+
+// ==========================================
+// 24. KPIs DE LEADS
+// ==========================================
+async function cargarKPIsLeads() {
+  try {
+    const { data, error } = await supabaseDB
+      .from('staging_leads')
+      .select('*');
+
+    if (error) throw error;
+
+    const leads = data || [];
+
+    // Leads del mes actual
+    const ahora = new Date();
+    const mesActual = ahora.getMonth();
+    const anioActual = ahora.getFullYear();
+
+    const leadsEsteMes = leads.filter(l => {
+      const fecha = new Date(l.created_at);
+      return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+    }).length;
+
+    // Leads por estado
+    const pendientes = leads.filter(l => ['pendiente_llamada', 'contactado', 'insistir'].includes(l.estado_lead)).length;
+    const enProceso = leads.filter(l => ['en_proceso', 'cotizacion_enviada', 'negociacion'].includes(l.estado_lead)).length;
+    const cerradosGanados = leads.filter(l => l.estado_lead === 'cerrado_ganado').length;
+
+    // Actualizar KPIs en el DOM
+    const kpiMes = document.getElementById('kpi-leads-mes');
+    const kpiPendientes = document.getElementById('kpi-leads-pendientes');
+    const kpiProceso = document.getElementById('kpi-leads-proceso');
+    const kpiCerrados = document.getElementById('kpi-leads-cerrados');
+
+    if (kpiMes) kpiMes.textContent = leadsEsteMes;
+    if (kpiPendientes) kpiPendientes.textContent = pendientes;
+    if (kpiProceso) kpiProceso.textContent = enProceso;
+    if (kpiCerrados) kpiCerrados.textContent = cerradosGanados;
+
+  } catch (error) {
+    console.error('Error al cargar KPIs de leads:', error);
+  }
+}
+
+window.verHistoricoLeadsMensual = async function() {
+  try {
+    const { data, error } = await supabaseDB
+      .from('staging_leads')
+      .select('created_at');
+
+    if (error) throw error;
+
+    const leads = data || [];
+
+    // Agrupar por mes
+    const porMes = {};
+    leads.forEach(l => {
+      const fecha = new Date(l.created_at);
+      const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+      porMes[key] = (porMes[key] || 0) + 1;
+    });
+
+    // Ordenar por fecha descendente
+    const mesesOrdenados = Object.entries(porMes).sort((a, b) => b[0].localeCompare(a[0]));
+
+    const mesesNombres = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    let contenido = '<div class="historial-lista">';
+
+    if (mesesOrdenados.length === 0) {
+      contenido += '<p class="historial-vacio">No hay datos históricos</p>';
+    } else {
+      let acumulado = 0;
+      // Invertir para calcular acumulado desde el inicio
+      const mesesParaAcumulado = [...mesesOrdenados].reverse();
+      const acumulados = {};
+      mesesParaAcumulado.forEach(([mes, count]) => {
+        acumulado += count;
+        acumulados[mes] = acumulado;
+      });
+
+      mesesOrdenados.forEach(([mes, count]) => {
+        const [anio, mesNum] = mes.split('-');
+        const nombreMes = mesesNombres[parseInt(mesNum)];
+        contenido += `
+          <div class="historial-item">
+            <div class="historial-cambio" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 600; color: #fff;">${nombreMes} ${anio}</span>
+              <div style="text-align: right;">
+                <span style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">${count}</span>
+                <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-left: 8px;">leads</span>
+              </div>
+            </div>
+            <div class="historial-meta" style="margin-top: 4px;">
+              <span>Acumulado hasta ${nombreMes}: <strong>${acumulados[mes]}</strong> leads totales</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    contenido += '</div>';
+
+    mostrarModalHistorial('Histórico de Leads por Mes', contenido);
+
+  } catch (error) {
+    console.error('Error al cargar histórico:', error);
+    mostrarToast('error', 'Error', 'No se pudo cargar el histórico');
+  }
+};
+
+// ==========================================
+// 25. MODAL EDITAR LEAD
+// ==========================================
+let leadEnEdicion = null;
+
+window.abrirModalEditLead = async function(leadId) {
+  try {
+    // Obtener datos del lead
+    const { data: lead, error: leadError } = await supabaseDB
+      .from('staging_leads')
+      .select('*')
+      .eq('id', leadId)
+      .single();
+
+    if (leadError) throw leadError;
+
+    leadEnEdicion = lead;
+
+    // Llenar información del lead
+    const infoGrid = document.getElementById('lead-info-grid');
+    infoGrid.innerHTML = `
+      <div class="lead-info-item">
+        <div class="lead-info-label">Cliente</div>
+        <div class="lead-info-value">${lead.nombre_cliente || '-'}</div>
+      </div>
+      <div class="lead-info-item">
+        <div class="lead-info-label">Teléfono</div>
+        <div class="lead-info-value">${lead.telefono || '-'}</div>
+      </div>
+      <div class="lead-info-item">
+        <div class="lead-info-label">Email</div>
+        <div class="lead-info-value">${lead.email || '-'}</div>
+      </div>
+      <div class="lead-info-item">
+        <div class="lead-info-label">Interés</div>
+        <div class="lead-info-value">${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</div>
+      </div>
+      <div class="lead-info-item">
+        <div class="lead-info-label">Fuente</div>
+        <div class="lead-info-value">${lead.fuente || '-'}</div>
+      </div>
+      <div class="lead-info-item">
+        <div class="lead-info-label">Ejecutivo</div>
+        <div class="lead-info-value">${lead.ejecutivo_derivado || '-'}</div>
+      </div>
+    `;
+
+    // Seleccionar estado actual
+    const selectEstado = document.getElementById('modal-lead-estado');
+    selectEstado.value = lead.estado_lead || 'pendiente_llamada';
+
+    // Cargar historial
+    const { data: historial, error: histError } = await supabaseDB
+      .from('staging_leads_historial')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('fecha_modificacion', { ascending: false })
+      .limit(10);
+
+    const timeline = document.getElementById('lead-historial-timeline');
+    if (!historial || historial.length === 0) {
+      timeline.innerHTML = '<p style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Sin cambios previos</p>';
+    } else {
+      timeline.innerHTML = historial.map(h => {
+        const fecha = new Date(h.fecha_modificacion).toLocaleString('es-ES');
+        const usuario = h.modificado_por ? h.modificado_por.split('@')[0] : 'Sistema';
+        return `
+          <div class="historial-entry">
+            <div class="historial-dot"></div>
+            <div class="historial-cambio">
+              <div class="historial-estados">
+                <span>${h.estado_anterior}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <span>${h.estado_nuevo}</span>
+              </div>
+              <div class="historial-meta">${fecha} - ${usuario}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Mostrar modal
+    document.getElementById('modal-lead-edit').classList.add('active');
+
+  } catch (error) {
+    console.error('Error al abrir modal:', error);
+    mostrarToast('error', 'Error', 'No se pudo cargar el lead');
+  }
+};
+
+window.cerrarModalEditLead = function() {
+  document.getElementById('modal-lead-edit').classList.remove('active');
+  leadEnEdicion = null;
+};
+
+// Guardar cambios del lead
+document.addEventListener('DOMContentLoaded', () => {
+  const btnGuardarLead = document.getElementById('btn-guardar-lead');
+  if (btnGuardarLead) {
+    btnGuardarLead.addEventListener('click', guardarCambiosLead);
+  }
+});
+
+async function guardarCambiosLead() {
+  if (!leadEnEdicion) return;
+
+  const nuevoEstado = document.getElementById('modal-lead-estado').value;
+  const estadoAnterior = leadEnEdicion.estado_lead;
+
+  if (nuevoEstado === estadoAnterior) {
+    cerrarModalEditLead();
+    return;
+  }
+
+  try {
+    // Actualizar el lead
+    const { error } = await supabaseDB
+      .from('staging_leads')
+      .update({
+        estado_lead: nuevoEstado,
+        updated_at: new Date().toISOString(),
+        updated_by: estado.usuario?.email || 'unknown'
+      })
+      .eq('id', leadEnEdicion.id);
+
+    if (error) throw error;
+
+    // Registrar en historial
+    await supabaseDB
+      .from('staging_leads_historial')
+      .insert({
+        lead_id: leadEnEdicion.id,
+        estado_anterior: estadoAnterior,
+        estado_nuevo: nuevoEstado,
+        modificado_por: estado.usuario?.email || 'unknown',
+        fecha_modificacion: new Date().toISOString()
+      });
+
+    mostrarToast('success', '¡Actualizado!', 'Estado del lead actualizado correctamente');
+    agregarNotificacion('success', `Lead actualizado: ${estadoAnterior} → ${nuevoEstado}`);
+
+    cerrarModalEditLead();
+    cargarRegistrosLeads();
+    cargarKPIsLeads();
+
+  } catch (error) {
+    console.error('Error al guardar cambios:', error);
+    mostrarToast('error', 'Error', 'No se pudieron guardar los cambios');
+  }
+}
+
+// ==========================================
+// 26. MODAL PAGO POPUP
+// ==========================================
+let pagoEnEdicion = {
+  tabla: null,
+  id: null,
+  montoOriginal: 0,
+  tipoPago: null
+};
+
+window.abrirModalPago = async function(tabla, id) {
+  try {
+    // Obtener datos del registro
+    const { data: registro, error } = await supabaseDB
+      .from(tabla)
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    pagoEnEdicion = {
+      tabla: tabla,
+      id: id,
+      montoOriginal: parseFloat(registro.monto_bs) || parseFloat(registro.precio_bs) || 0,
+      tipoPago: null
+    };
+
+    // Llenar resumen
+    const resumen = document.getElementById('pago-resumen');
+    let titulo = '';
+    let detalle = '';
+
+    if (tabla === 'staging_rentacar_cobranzas') {
+      titulo = registro.cliente || 'Cliente';
+      detalle = `${registro.locacion || '-'} | ${registro.mes_deuda || '-'}`;
+    } else if (tabla === 'staging_interauto_ventas') {
+      titulo = `${registro.marca || ''} ${registro.modelo || ''}`;
+      detalle = `Vendedor: ${registro.vendedor || '-'}`;
+    }
+
+    resumen.innerHTML = `
+      <div class="pago-resumen-item">
+        <span class="pago-resumen-label">Registro</span>
+        <span class="pago-resumen-value">${titulo}</span>
+      </div>
+      <div class="pago-resumen-item">
+        <span class="pago-resumen-label">Detalle</span>
+        <span class="pago-resumen-value">${detalle}</span>
+      </div>
+      <div class="pago-resumen-item">
+        <span class="pago-resumen-label">Monto Total</span>
+        <span class="pago-resumen-value">Bs ${formatNumber(pagoEnEdicion.montoOriginal)}</span>
+      </div>
+    `;
+
+    // Resetear estado de botones y campos
+    document.querySelectorAll('.pago-tipo-btn').forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('campo-monto-pagado').classList.remove('visible');
+    document.getElementById('campo-detalle-negociacion').classList.remove('visible');
+    document.getElementById('input-monto-pagado').value = '';
+    document.getElementById('input-detalle-negociacion').value = '';
+
+    // Mostrar modal
+    document.getElementById('modal-pago').classList.add('active');
+
+  } catch (error) {
+    console.error('Error al abrir modal de pago:', error);
+    mostrarToast('error', 'Error', 'No se pudo cargar el registro');
+  }
+};
+
+window.cerrarModalPago = function() {
+  document.getElementById('modal-pago').classList.remove('active');
+  pagoEnEdicion = { tabla: null, id: null, montoOriginal: 0, tipoPago: null };
+};
+
+window.seleccionarTipoPago = function(tipo) {
+  pagoEnEdicion.tipoPago = tipo;
+
+  // Actualizar UI de botones
+  document.querySelectorAll('.pago-tipo-btn').forEach(btn => btn.classList.remove('selected'));
+  document.querySelector(`.pago-tipo-btn.tipo-${tipo}`).classList.add('selected');
+
+  // Mostrar/ocultar campos según el tipo
+  const campoMonto = document.getElementById('campo-monto-pagado');
+  const campoDetalle = document.getElementById('campo-detalle-negociacion');
+
+  campoMonto.classList.toggle('visible', tipo === 'parcial');
+  campoDetalle.classList.toggle('visible', tipo === 'negociacion');
+};
+
+// Confirmar pago
+document.addEventListener('DOMContentLoaded', () => {
+  const btnConfirmarPago = document.getElementById('btn-confirmar-pago');
+  if (btnConfirmarPago) {
+    btnConfirmarPago.addEventListener('click', confirmarPagoModal);
+  }
+});
+
+async function confirmarPagoModal() {
+  if (!pagoEnEdicion.tabla || !pagoEnEdicion.id || !pagoEnEdicion.tipoPago) {
+    mostrarToast('error', 'Error', 'Seleccione un tipo de pago');
+    return;
+  }
+
+  const { tabla, id, tipoPago, montoOriginal } = pagoEnEdicion;
+
+  try {
+    let updateData = {
+      updated_at: new Date().toISOString(),
+      updated_by: estado.usuario?.email || 'unknown',
+      fecha_pago: new Date().toISOString()
+    };
+
+    if (tipoPago === 'total') {
+      updateData.pagado = true;
+      updateData.tipo_pago = 'total';
+      updateData.monto_pagado = montoOriginal;
+      updateData.saldo_pendiente = 0;
+    } else if (tipoPago === 'parcial') {
+      const montoPagado = parseFloat(document.getElementById('input-monto-pagado').value) || 0;
+      if (montoPagado <= 0) {
+        mostrarToast('error', 'Error', 'Ingrese un monto válido');
+        return;
+      }
+      updateData.tipo_pago = 'parcial';
+      updateData.monto_pagado = montoPagado;
+      updateData.saldo_pendiente = montoOriginal - montoPagado;
+      updateData.pagado = (montoOriginal - montoPagado) <= 0;
+    } else if (tipoPago === 'negociacion') {
+      const detalle = document.getElementById('input-detalle-negociacion').value.trim();
+      if (!detalle) {
+        mostrarToast('error', 'Error', 'Ingrese el detalle de la negociación');
+        return;
+      }
+      updateData.pagado = true;
+      updateData.tipo_pago = 'negociacion';
+      updateData.detalle_negociacion = detalle;
+    }
+
+    const { error } = await supabaseDB
+      .from(tabla)
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) throw error;
+
+    // Registrar en historial
+    await registrarHistorialPago(
+      tabla,
+      id,
+      tipoPago === 'total' ? 'pagado_total' : tipoPago === 'parcial' ? 'pago_parcial' : 'negociacion',
+      tipoPago === 'parcial' ? updateData.monto_pagado : null,
+      tipoPago === 'negociacion' ? updateData.detalle_negociacion : null
+    );
+
+    const mensajes = {
+      total: '¡Pago Total registrado!',
+      parcial: `Pago parcial de Bs ${formatNumber(updateData.monto_pagado)} registrado`,
+      negociacion: 'Negociación registrada correctamente'
+    };
+
+    mostrarToast('success', '¡Registrado!', mensajes[tipoPago]);
+    agregarNotificacion('success', mensajes[tipoPago]);
+
+    cerrarModalPago();
+
+    // Recargar lista correspondiente
+    const containerId = tabla === 'staging_rentacar_cobranzas' ? 'list-rc-cobranzas' : 'list-ia-ventas';
+    cargarRegistros(tabla, containerId, true);
+
+  } catch (error) {
+    console.error('Error al confirmar pago:', error);
+    mostrarToast('error', 'Error', 'No se pudo registrar el pago');
+  }
+}
+
+// ==========================================
+// 27. ACTUALIZAR RENDER DE LEADS PARA EJECUTIVOS
+// ==========================================
+// Sobrescribir la función renderLead para usar el botón de editar
+const renderLeadOriginal = renderLead;
+window.renderLead = function(lead) {
+  const statusColors = {
+    'pendiente_llamada': { bg: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', label: 'Pendiente Llamada' },
+    'contactado': { bg: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', label: 'Contactado' },
+    'insistir': { bg: 'rgba(249, 115, 22, 0.2)', color: '#f97316', label: 'Insistir' },
+    'en_proceso': { bg: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6', label: 'En Proceso' },
+    'cotizacion_enviada': { bg: 'rgba(14, 165, 233, 0.2)', color: '#0ea5e9', label: 'Cotización Enviada' },
+    'negociacion': { bg: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', label: 'Negociación' },
+    'cerrado_ganado': { bg: 'rgba(34, 197, 94, 0.2)', color: '#22c55e', label: 'Cerrado Ganado' },
+    'cerrado_perdido': { bg: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', label: 'Cerrado Perdido' },
+    'no_interesado': { bg: 'rgba(107, 114, 128, 0.2)', color: '#6b7280', label: 'No Interesado' },
+    'no_contesta': { bg: 'rgba(156, 163, 175, 0.2)', color: '#9ca3af', label: 'No Contesta' }
+  };
+
+  const statusInfo = statusColors[lead.estado_lead] || statusColors['pendiente_llamada'];
+  const fechaCreacion = formatearFechaCorta(lead.created_at);
+  const fechaUpdate = lead.updated_at ? formatearFecha(lead.updated_at) : '-';
+  const puedeEditar = estado.moduloActivo === 'ejecutivo_leads' || estado.moduloActivo === 'leads';
+  const ultimoModificador = lead.updated_by ? lead.updated_by.split('@')[0] : '-';
+
+  return `
+    <div class="registro-item lead-item">
+      <div class="registro-info">
+        <div class="registro-titulo">${lead.nombre_cliente || 'Sin nombre'}</div>
+        <div class="registro-meta">
+          <span>${lead.telefono || '-'}</span>
+          <span>${lead.email || '-'}</span>
+          <span>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
+        </div>
+        <div class="registro-meta">
+          <span>Ejecutivo: <strong>${lead.ejecutivo_derivado || '-'}</strong></span>
+          <span>Creado: ${fechaCreacion}</span>
+        </div>
+        <div class="registro-meta lead-historial">
+          <span>Últ. modificación: ${fechaUpdate}</span>
+          <span>Por: <strong>${ultimoModificador}</strong></span>
+        </div>
+        ${lead.notas ? `<div class="lead-notas">${lead.notas}</div>` : ''}
+      </div>
+      <div class="lead-actions">
+        ${puedeEditar ? `
+          <button class="btn-editar-lead" onclick="abrirModalEditLead(${lead.id})">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar
+          </button>
+          <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
+        ` : `
+          <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
+        `}
+      </div>
+    </div>
+  `;
+};
+
+// ==========================================
+// 28. ACTUALIZAR RENDER DE REGISTRO PARA USAR MODAL PAGO
+// ==========================================
+// Sobrescribir para usar modal en lugar de prompt
+const renderRegistroOriginal = renderRegistro;
+window.renderRegistroConModal = function(registro, tabla, conPago, esNuevo = false) {
+  let titulo = '';
+  let meta = '';
+
+  switch (tabla) {
+    case 'staging_rentacar_ingresos':
+      titulo = registro.nombre_ingreso || `Ingreso ${registro.anio}-${registro.mes}`;
+      const anticipoTag = registro.es_anticipo ? '<span class="tag-anticipo">ANTICIPO</span>' : '';
+      meta = `${anticipoTag}Bs ${formatNumber(registro.ingreso_bs)} | $${formatNumber(registro.ingreso_usd)}`;
+      break;
+    case 'staging_rentacar_cobranzas':
+      titulo = registro.cliente || 'Cliente';
+      meta = `${registro.locacion} | Bs ${formatNumber(registro.monto_bs)}`;
+      break;
+    case 'staging_interauto_ventas':
+      titulo = `${registro.marca} ${registro.modelo}`;
+      meta = `${registro.vendedor} | $${formatNumber(registro.precio_usd)} | Utilidad: Bs ${formatNumber(registro.utilidad)}`;
+      break;
+    case 'staging_interauto_ingresos':
+      titulo = registro.nombre_factura || `Factura ${registro.numero_factura}`;
+      meta = `#${registro.numero_factura} | Bs ${formatNumber(registro.monto_bs)}`;
+      break;
+    case 'staging_leads':
+      titulo = registro.nombre_cliente || 'Lead';
+      meta = `${registro.telefono || '-'} | ${registro.marca_interes || '-'}`;
+      break;
+    case 'staging_jetour_stock':
+      titulo = `${registro.modelo} - ${registro.color || 'N/A'}`;
+      meta = `VIN: ${registro.vin || '-'} | $${formatNumber(registro.precio_cliente_final || registro.precio_venta)}`;
+      break;
+  }
+
+  const fechaCreacion = formatearFechaCorta(registro.created_at);
+  const modificadoPor = registro.updated_by ? registro.updated_by.split('@')[0] : '-';
+  const nuevoClass = esNuevo ? ' new' : '';
+
+  let statusClass = registro.status || 'pendiente';
+  let statusText = registro.status || 'Pendiente';
+
+  if (registro.pagado) {
+    if (registro.tipo_pago === 'total') {
+      statusClass = 'pagado_total';
+      statusText = 'Pagado Total';
+    } else if (registro.tipo_pago === 'parcial') {
+      statusClass = 'pagado_parcial';
+      statusText = 'Pago Parcial';
+    } else if (registro.tipo_pago === 'negociacion') {
+      statusClass = 'negociacion';
+      statusText = 'Negociación';
+    } else {
+      statusClass = 'pagado';
+      statusText = 'Pagado';
+    }
+  }
+
+  // Generar botón de pago con modal
+  let accionesHTML = '';
+  if (conPago && !registro.pagado) {
+    accionesHTML = `
+      <div class="registro-payment-actions">
+        <button class="btn-pago btn-pago-total" onclick="abrirModalPago('${tabla}', ${registro.id})">
+          Registrar Pago
+        </button>
+      </div>
+    `;
+  } else if (conPago && registro.pagado) {
+    let pagoInfo = '';
+    if (registro.tipo_pago === 'parcial' && registro.saldo_pendiente > 0) {
+      pagoInfo = `<div class="pago-info parcial">Pagado: Bs ${formatNumber(registro.monto_pagado)} | Saldo: Bs ${formatNumber(registro.saldo_pendiente)}</div>`;
+    } else if (registro.tipo_pago === 'negociacion') {
+      pagoInfo = `<div class="pago-info negociacion">${registro.detalle_negociacion || 'Cerrado por negociación'}</div>`;
+    }
+    accionesHTML = pagoInfo;
+  }
+
+  return `
+    <div class="registro-item${nuevoClass}">
+      <div class="registro-info">
+        <div class="registro-titulo">${titulo}</div>
+        <div class="registro-meta">
+          <span>${meta}</span>
+          <span>Creado: ${fechaCreacion}</span>
+          <span>Modificado: ${modificadoPor}</span>
+        </div>
+      </div>
+      <span class="registro-status ${statusClass}">${statusText}</span>
+      ${accionesHTML}
+    </div>
+  `;
+};
+
+// Reemplazar renderRegistro global
+window.renderRegistro = window.renderRegistroConModal;
+
+// ==========================================
+// 29. INICIALIZACIÓN ADICIONAL
+// ==========================================
+// Inicializar control de sesión cuando se muestra el dashboard
+const mostrarDashboardOriginal = mostrarDashboard;
+window.mostrarDashboardExtendido = function(modulo) {
+  mostrarDashboardOriginal(modulo);
+
+  // Inicializar control de sesión
+  inicializarControlSesion();
+
+  // Si es el módulo de leads, cargar KPIs
+  if (modulo === 'leads' || modulo === 'ejecutivo_leads') {
+    setTimeout(cargarKPIsLeads, 500);
+  }
+};
+
+// Sobrescribir mostrarDashboard
+mostrarDashboard = window.mostrarDashboardExtendido;
+
+// Limpiar sesión al hacer logout
+const handleLogoutOriginal = handleLogout;
+window.handleLogout = async function() {
+  limpiarControlSesion();
+  await handleLogoutOriginal();
+};
+
+// Cerrar modales con ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('modal-lead-edit')?.classList.contains('active')) {
+      cerrarModalEditLead();
+    }
+    if (document.getElementById('modal-pago')?.classList.contains('active')) {
+      cerrarModalPago();
+    }
+  }
+});
+
+// Click fuera del modal para cerrar
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'modal-lead-edit') {
+    cerrarModalEditLead();
+  }
+  if (e.target.id === 'modal-pago') {
+    cerrarModalPago();
+  }
+});
