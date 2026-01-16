@@ -2268,6 +2268,383 @@
       from { transform: translateY(-100%); }
       to { transform: translateY(0); }
     }
+
+    /* ========== PRECIOS SELECCIONABLES STOCK ========== */
+    .precios-venta-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .precios-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .precios-header h4 {
+      color: rgba(255,255,255,0.9);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .precios-hint {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .precios-checkboxes {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .precio-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .precio-checkbox:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .precio-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .precio-checkbox span {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .precio-checkbox:has(input:checked) {
+      background: rgba(180, 0, 26, 0.15);
+      border-color: rgba(180, 0, 26, 0.4);
+    }
+
+    .precio-checkbox:has(input:checked) span {
+      color: #fff;
+    }
+
+    .precios-inputs {
+      min-height: 80px;
+    }
+
+    .precio-input-group {
+      transition: all 0.3s ease;
+    }
+
+    .precio-input-group.hidden {
+      display: none !important;
+    }
+
+    /* ========== SIMETRIA FORMULARIOS ========== */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-row-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .form-group-erp {
+      display: flex;
+      flex-direction: column;
+      min-height: 80px;
+    }
+
+    .form-group-erp.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group-erp label {
+      margin-bottom: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .erp-input, .erp-select, .erp-textarea {
+      height: 48px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .erp-textarea {
+      height: auto;
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    /* ========== DASHBOARD EJECUTIVO SIMETRIA ========== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .dashboard-kpi {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 90px;
+    }
+
+    .dashboard-kpi.wide {
+      grid-column: span 2;
+    }
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+    }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kpi-info .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .kpi-info .kpi-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .dashboard-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .distribution-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .distribution-bar-item {
+      display: grid;
+      grid-template-columns: 140px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-container {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .bar-fill.ubicacion {
+      background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    }
+
+    .bar-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: right;
+    }
+
+    /* ========== STOCK LIST SIMETRIA ========== */
+    .stock-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .stock-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stock-modelo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stock-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .stock-detail {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .stock-detail span {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .stock-precios {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stock-precio {
+      text-align: center;
+    }
+
+    .stock-precio .precio-label {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stock-precio .precio-valor {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .stock-precio .precio-valor.positivo {
+      color: #22c55e;
+    }
+
+    .stock-precio .precio-valor.negativo {
+      color: #ef4444;
+    }
+
+    .stock-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stock-status-select {
+      flex: 1;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .dashboard-kpi.wide {
+        grid-column: span 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .form-row, .form-row-3 {
+        grid-template-columns: 1fr;
+      }
+      .precios-checkboxes {
+        flex-direction: column;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .stock-precios {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .distribution-bar-item {
+        grid-template-columns: 100px 1fr 40px;
+      }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3248,13 +3625,20 @@
                 <label>Modelo <span class="required">*</span></label>
                 <select class="erp-select" name="modelo" required>
                   <option value="">Seleccionar...</option>
-                  <option value="Jetour T2">Jetour T2</option>
-                  <option value="Jetour X70">Jetour X70</option>
-                  <option value="Jetour X70 Plus">Jetour X70 Plus</option>
-                  <option value="Jetour X90">Jetour X90</option>
-                  <option value="Jetour X90 Plus">Jetour X90 Plus</option>
-                  <option value="Jetour Dashing">Jetour Dashing</option>
-                  <option value="Jetour T1">Jetour T1</option>
+                  <option value="X50">X50</option>
+                  <option value="X70 MT">X70 MT</option>
+                  <option value="X70 AT">X70 AT</option>
+                  <option value="X70 PLUS MT">X70 PLUS MT</option>
+                  <option value="X70 PLUS AT">X70 PLUS AT</option>
+                  <option value="X90">X90</option>
+                  <option value="DASHING MT">DASHING MT</option>
+                  <option value="DASHING AT">DASHING AT</option>
+                  <option value="T1">T1</option>
+                  <option value="T1 PHEV">T1 PHEV</option>
+                  <option value="T2">T2</option>
+                  <option value="T2 PHEV">T2 PHEV</option>
+                  <option value="G700">G700</option>
+                  <option value="F700">F700</option>
                 </select>
               </div>
               <div class="form-group-erp">
@@ -3284,21 +3668,44 @@
                 <label>Precio CIF (USD) <span class="required">*</span></label>
                 <input type="number" class="erp-input" name="precio_costo" placeholder="0.00" step="0.01" min="0" required />
               </div>
+              <div class="form-group-erp">
+                <label>Ubicación <span class="required">*</span></label>
+                <input type="text" class="erp-input" name="ubicacion" placeholder="Ej: Showroom Santa Cruz" required />
+              </div>
             </div>
 
-            <h4 style="color: rgba(255,255,255,0.8); margin: 20px 0 16px; font-size: 0.9rem;">Precios de Venta (USD)</h4>
-            <div class="form-row form-row-3">
-              <div class="form-group-erp">
-                <label>Cliente Final <span class="required">*</span></label>
-                <input type="number" class="erp-input" name="precio_cliente_final" placeholder="0.00" step="0.01" min="0" required />
+            <div class="precios-venta-section">
+              <div class="precios-header">
+                <h4>Precios de Venta (USD)</h4>
+                <span class="precios-hint">Seleccione los precios a registrar</span>
               </div>
-              <div class="form-group-erp">
-                <label>Mayorista</label>
-                <input type="number" class="erp-input" name="precio_mayorista" placeholder="0.00" step="0.01" min="0" />
+              <div class="precios-checkboxes">
+                <label class="precio-checkbox">
+                  <input type="checkbox" id="check-precio-final" checked onchange="togglePrecioInput('final')">
+                  <span>Cliente Final</span>
+                </label>
+                <label class="precio-checkbox">
+                  <input type="checkbox" id="check-precio-mayorista" onchange="togglePrecioInput('mayorista')">
+                  <span>Mayorista</span>
+                </label>
+                <label class="precio-checkbox">
+                  <input type="checkbox" id="check-precio-grupo" onchange="togglePrecioInput('grupo')">
+                  <span>Empresa del Grupo</span>
+                </label>
               </div>
-              <div class="form-group-erp">
-                <label>Empresa del Grupo</label>
-                <input type="number" class="erp-input" name="precio_grupo" placeholder="0.00" step="0.01" min="0" />
+              <div class="form-row form-row-3 precios-inputs">
+                <div class="form-group-erp precio-input-group" id="grupo-precio-final">
+                  <label>Cliente Final</label>
+                  <input type="number" class="erp-input" name="precio_cliente_final" id="input-precio-final" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <div class="form-group-erp precio-input-group hidden" id="grupo-precio-mayorista">
+                  <label>Mayorista</label>
+                  <input type="number" class="erp-input" name="precio_mayorista" id="input-precio-mayorista" placeholder="0.00" step="0.01" min="0" />
+                </div>
+                <div class="form-group-erp precio-input-group hidden" id="grupo-precio-grupo">
+                  <label>Empresa del Grupo</label>
+                  <input type="number" class="erp-input" name="precio_grupo" id="input-precio-grupo" placeholder="0.00" step="0.01" min="0" />
+                </div>
               </div>
             </div>
 
@@ -3306,13 +3713,6 @@
               <div class="form-group-erp">
                 <label>Margen Calculado (vs CIF)</label>
                 <input type="text" class="erp-input" id="margen-calculado" placeholder="--%" readonly style="background: rgba(255,255,255,0.02);" />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group-erp">
-                <label>Ubicación <span class="required">*</span></label>
-                <input type="text" class="erp-input" name="ubicacion" placeholder="Ej: Showroom Santa Cruz" required />
               </div>
               <div class="form-group-erp">
                 <label>Estado <span class="required">*</span></label>
@@ -3326,7 +3726,7 @@
             </div>
 
             <div class="form-row">
-              <div class="form-group-erp">
+              <div class="form-group-erp full-width">
                 <label>Observaciones</label>
                 <textarea class="erp-textarea" name="observaciones" placeholder="Notas adicionales sobre el vehículo..."></textarea>
               </div>

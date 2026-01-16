@@ -2062,6 +2062,44 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ==========================================
+// 22.5 TOGGLE PRECIOS STOCK
+// ==========================================
+window.togglePrecioInput = function(tipo) {
+  const checkbox = document.getElementById(`check-precio-${tipo}`);
+  const grupo = document.getElementById(`grupo-precio-${tipo}`);
+  const input = document.getElementById(`input-precio-${tipo}`);
+
+  if (checkbox && grupo) {
+    if (checkbox.checked) {
+      grupo.classList.remove('hidden');
+    } else {
+      grupo.classList.add('hidden');
+      if (input) input.value = '';
+    }
+  }
+
+  // Reorganizar los inputs visibles
+  reorganizarPreciosInputs();
+};
+
+function reorganizarPreciosInputs() {
+  const container = document.querySelector('.precios-inputs');
+  if (!container) return;
+
+  const grupos = container.querySelectorAll('.precio-input-group');
+  const visibles = Array.from(grupos).filter(g => !g.classList.contains('hidden'));
+
+  // Ajustar el grid según cantidad de inputs visibles
+  if (visibles.length === 1) {
+    container.style.gridTemplateColumns = '1fr';
+  } else if (visibles.length === 2) {
+    container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  } else {
+    container.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  }
+}
+
+// ==========================================
 // 23. AUTO-LOGOUT DESPUÉS DE 24 HORAS
 // ==========================================
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
