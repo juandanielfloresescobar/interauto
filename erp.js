@@ -271,21 +271,42 @@ function inicializarEventos() {
  */
 async function cargarPerfilUsuario(userId) {
   try {
+    console.log('Cargando perfil para userId:', userId);
+
+    // Primero intentar sin el JOIN para debug
     const { data, error } = await supabase
       .from('profiles')
-      .select('*, companies(nombre, codigo)')
+      .select('*')
       .eq('id', userId)
       .eq('activo', true)
       .single();
 
     if (error) {
       console.error('Error al cargar perfil:', error);
+      console.error('Código:', error.code);
+      console.error('Mensaje:', error.message);
+      console.error('Detalles:', error.details);
       return null;
+    }
+
+    console.log('Perfil cargado:', data);
+
+    // Si el perfil tiene company_id, cargar datos de empresa separadamente
+    if (data && data.company_id) {
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('nombre, codigo')
+        .eq('id', data.company_id)
+        .single();
+
+      if (!companyError && companyData) {
+        data.companies = companyData;
+      }
     }
 
     return data;
   } catch (error) {
-    console.error('Error al cargar perfil:', error);
+    console.error('Error al cargar perfil (catch):', error);
     return null;
   }
 }
