@@ -1,6 +1,6 @@
 // ==========================================
 // ERP DATA ENTRY - GRUPO SAA
-// Con Supabase Auth
+// Con Supabase Auth + RLS Seguro
 // ==========================================
 
 // ==========================================
@@ -9,7 +9,7 @@
 const SUPABASE_URL = 'https://zzelbikylbbxclnskgkf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6ZWxiaWt5bGJieGNsbnNrZ2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MjA4NDMsImV4cCI6MjA4MTQ5Njg0M30.VGqblbw-vjQWUTpz8Xdhk5MNLyNniXvAO9moMWVAd8s';
 
-// Cliente principal para Auth
+// Cliente principal para Auth y public schema
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Cliente para operaciones de BD (esquema staging)
@@ -18,42 +18,8 @@ const supabaseDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 });
 
 // ==========================================
-// 2. MAPEO DE USUARIOS A TIPO Y PERMISOS MULTI-MÓDULO
+// 2. CONFIGURACIÓN DE MÓDULOS (sin usuarios hardcodeados)
 // ==========================================
-const USER_ROLES = {
-  'pablo.toro@saavrentacar.com': {
-    modulos: ['rentacar'],
-    nombre: 'Pablo Toro',
-    permisos: ['ver', 'crear', 'editar']
-  },
-  'daniela.eguez@groupsaa.com': {
-    modulos: ['interauto', 'leads', 'stock'],
-    nombre: 'Daniela Eguez',
-    permisos: ['ver', 'crear', 'editar']
-  },
-  'yngrid.numbela@groupsaa.com': {
-    modulos: ['leads'],
-    nombre: 'Yngrid Numbela',
-    permisos: ['ver']
-  },
-  'diego.zapata@groupsaa.com': {
-    modulos: ['ejecutivo_leads'],
-    nombre: 'Ejecutivo de Ventas',
-    permisos: ['ver', 'crear', 'editar']
-  },
-  'juan.flores@groupsaa.com': {
-    modulos: ['jetour', 'interauto', 'leads','rentacar' ],
-    nombre: 'Daniel Flores',
-    permisos: ['ver', 'crear', 'editar']
-  },
-  'german.decebal@groupsaa.com': {
-    modulos: ['leads'],
-    nombre: 'German Decebal',
-    permisos: ['ver']
-  }
-};
-
-// Configuración de módulos disponibles
 const MODULOS_CONFIG = {
   rentacar: {
     nombre: 'Rent a Car',
@@ -92,7 +58,7 @@ const MODULOS_CONFIG = {
 // ==========================================
 let estado = {
   usuario: null,
-  userRole: null,
+  userProfile: null, // Perfil desde Supabase (company_id, rol, modulos, permisos)
   moduloActivo: null,
   tabActiva: null,
   notificaciones: [],
@@ -100,6 +66,18 @@ let estado = {
   tablaPendiente: null,
   tipoRegistroPendiente: null
 };
+
+// Alias para compatibilidad
+Object.defineProperty(estado, 'userRole', {
+  get() {
+    if (!this.userProfile) return null;
+    return {
+      modulos: this.userProfile.modulos || [],
+      nombre: this.userProfile.nombre_display || 'Usuario',
+      permisos: this.userProfile.permisos || ['ver']
+    };
+  }
+});
 
 // ==========================================
 // 4. ELEMENTOS DEL DOM
@@ -283,8 +261,71 @@ function inicializarEventos() {
 }
 
 // ==========================================
-// 6. AUTENTICACIÓN CON SUPABASE
+// 6. AUTENTICACIÓN CON SUPABASE + PERFILES
 // ==========================================
+
+/**
+ * Carga el perfil del usuario desde public.profiles
+ * @param {string} userId - UUID del usuario
+ * @returns {Object|null} - Perfil del usuario o null
+ */
+async function cargarPerfilUsuario(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*, companies(nombre, codigo)')
+      .eq('id', userId)
+      .eq('activo', true)
+      .single();
+
+    if (error) {
+      console.error('Error al cargar perfil:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error al cargar perfil:', error);
+    return null;
+  }
+}
+
+/**
+ * Verifica si el usuario tiene permiso para una acción
+ * @param {string} permiso - 'ver', 'crear', 'editar', 'eliminar'
+ * @returns {boolean}
+ */
+function tienePermiso(permiso) {
+  if (!estado.userProfile) return false;
+  return estado.userProfile.permisos?.includes(permiso) || false;
+}
+
+/**
+ * Verifica si el usuario tiene acceso a un módulo
+ * @param {string} modulo - Nombre del módulo
+ * @returns {boolean}
+ */
+function tieneAccesoModulo(modulo) {
+  if (!estado.userProfile) return false;
+  return estado.userProfile.modulos?.includes(modulo) || false;
+}
+
+/**
+ * Obtiene el company_id del usuario actual
+ * @returns {string|null}
+ */
+function getCompanyId() {
+  return estado.userProfile?.company_id || null;
+}
+
+/**
+ * Obtiene el user_id del usuario actual
+ * @returns {string|null}
+ */
+function getUserId() {
+  return estado.usuario?.id || null;
+}
+
 async function handleLogin(e) {
   e.preventDefault();
 
@@ -296,6 +337,7 @@ async function handleLogin(e) {
   elementos.btnLogin.textContent = 'Iniciando...';
 
   try {
+    // 1. Autenticar con Supabase Auth
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -303,25 +345,45 @@ async function handleLogin(e) {
 
     if (error) throw error;
 
-    // Verificar si el usuario tiene rol asignado
-    const userRole = USER_ROLES[email.toLowerCase()];
-    if (!userRole) {
+    // 2. Cargar perfil desde public.profiles
+    const profile = await cargarPerfilUsuario(data.user.id);
+
+    if (!profile) {
       await supabase.auth.signOut();
-      throw new Error('Usuario no autorizado para este sistema');
+      throw new Error('Usuario no autorizado. Contacte al administrador.');
     }
 
-    // Login exitoso
-    estado.usuario = data.user;
-    estado.userRole = userRole;
+    if (!profile.company_id) {
+      await supabase.auth.signOut();
+      throw new Error('Usuario sin empresa asignada. Contacte al administrador.');
+    }
 
-    // Si tiene múltiples módulos, mostrar pantalla de selección
+    if (!profile.modulos || profile.modulos.length === 0) {
+      await supabase.auth.signOut();
+      throw new Error('Usuario sin módulos asignados. Contacte al administrador.');
+    }
+
+    // 3. Login exitoso - guardar en estado
+    estado.usuario = data.user;
+    estado.userProfile = profile;
+
+    console.log('Login exitoso:', {
+      email: profile.email,
+      company_id: profile.company_id,
+      modulos: profile.modulos,
+      permisos: profile.permisos
+    });
+
+    // 4. Navegar según módulos disponibles
+    const userRole = estado.userRole; // Usa el getter definido
+
     if (userRole.modulos.length > 1) {
       mostrarPantallaSeleccion(userRole);
     } else {
-      // Solo un módulo, ir directo
       estado.moduloActivo = userRole.modulos[0];
       mostrarDashboard(userRole.modulos[0]);
     }
+
     agregarNotificacion('info', `Sesión iniciada como ${userRole.nombre}`);
 
   } catch (error) {
@@ -346,7 +408,7 @@ async function handleLogout() {
   }
 
   estado.usuario = null;
-  estado.userRole = null;
+  estado.userProfile = null;
   estado.moduloActivo = null;
 
   // Ocultar todo y mostrar login
@@ -364,10 +426,14 @@ async function verificarSesion() {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session && session.user) {
-      const userRole = USER_ROLES[session.user.email.toLowerCase()];
-      if (userRole) {
+      // Cargar perfil desde Supabase
+      const profile = await cargarPerfilUsuario(session.user.id);
+
+      if (profile && profile.company_id && profile.modulos?.length > 0) {
         estado.usuario = session.user;
-        estado.userRole = userRole;
+        estado.userProfile = profile;
+
+        const userRole = estado.userRole;
 
         // Si tiene múltiples módulos, mostrar selección
         if (userRole.modulos.length > 1) {
@@ -645,11 +711,25 @@ async function handleSubmit(form, tabla, tipoRegistro) {
     datos.precio_bs = parseFloat((datos.precio_usd * TIPO_CAMBIO).toFixed(2));
   }
 
-  // Agregar metadatos
+  // ========== INYECTAR COMPANY_ID Y METADATOS SEGUROS ==========
+  // company_id es OBLIGATORIO para RLS
+  const companyId = getCompanyId();
+  const userId = getUserId();
+
+  if (!companyId) {
+    console.error('Error: No hay company_id - usuario no autorizado');
+    mostrarToast('error', 'Error de Seguridad', 'Sesión inválida. Por favor inicie sesión nuevamente.');
+    handleLogout();
+    return;
+  }
+
+  // Agregar metadatos de seguridad
+  datos.company_id = companyId;
   datos.created_at = new Date().toISOString();
-  datos.created_by = estado.usuario?.email || 'unknown';
+  datos.created_by = userId; // UUID del usuario, no email
   datos.status = 'pendiente';
   datos.updated_at = new Date().toISOString();
+  datos.updated_by = userId;
 
   console.log('📤 Enviando datos a', tabla, ':', JSON.stringify(datos, null, 2));
 
@@ -1222,12 +1302,20 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
     const estadoAnterior = leadActual?.estado_lead || 'desconocido';
 
     // Actualizar el lead
+    const companyId = getCompanyId();
+    const userId = getUserId();
+
+    if (!companyId) {
+      mostrarToast('error', 'Error de Seguridad', 'Sesión inválida');
+      return;
+    }
+
     const { error } = await supabaseDB
       .from('staging_leads')
       .update({
         estado_lead: nuevoEstado,
         updated_at: new Date().toISOString(),
-        updated_by: estado.usuario?.email || 'unknown'
+        updated_by: userId
       })
       .eq('id', id);
 
@@ -1240,8 +1328,9 @@ window.actualizarEstadoLead = async function(id, nuevoEstado) {
         lead_id: id,
         estado_anterior: estadoAnterior,
         estado_nuevo: nuevoEstado,
-        modificado_por: estado.usuario?.email || 'unknown',
-        fecha_modificacion: new Date().toISOString()
+        modificado_por: userId,
+        fecha_modificacion: new Date().toISOString(),
+        company_id: companyId
       });
 
     mostrarToast('success', '¡Actualizado!', 'Estado del lead actualizado');
@@ -1457,12 +1546,20 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
       }
     }
 
+    const companyId = getCompanyId();
+    const userId = getUserId();
+
+    if (!companyId) {
+      mostrarToast('error', 'Error de Seguridad', 'Sesión inválida');
+      return;
+    }
+
     const { error } = await supabaseDB
       .from('staging_jetour_stock')
       .update({
         estado: nuevoEstado,
         updated_at: new Date().toISOString(),
-        updated_by: estado.usuario?.email || 'unknown',
+        updated_by: userId,
         ...datosVenta
       })
       .eq('id', id);
@@ -1476,9 +1573,10 @@ window.actualizarEstadoStock = async function(id, nuevoEstado) {
         stock_id: id,
         estado_anterior: estadoAnterior,
         estado_nuevo: nuevoEstado,
-        modificado_por: estado.usuario?.email || 'unknown',
+        modificado_por: userId,
         fecha_modificacion: new Date().toISOString(),
-        detalle: datosVenta.vendido_a ? `Vendido a: ${datosVenta.vendido_a}` : null
+        detalle: datosVenta.vendido_a ? `Vendido a: ${datosVenta.vendido_a}` : null,
+        company_id: companyId
       });
 
     mostrarToast('success', '¡Actualizado!', 'Estado del vehículo actualizado');
@@ -1845,6 +1943,8 @@ window.convertirMoneda = function(inputOrigen, inputDestino, direccion) {
 window.marcarPagadoTotal = async function(tabla, id) {
   if (!confirm('¿Confirma marcar esta cuenta como PAGADA en su totalidad?')) return;
 
+  const userId = getUserId();
+
   try {
     const { error } = await supabaseDB
       .from(tabla)
@@ -1853,7 +1953,7 @@ window.marcarPagadoTotal = async function(tabla, id) {
         tipo_pago: 'total',
         monto_pagado: null, // Se asume el total
         updated_at: new Date().toISOString(),
-        updated_by: estado.usuario?.email || 'unknown',
+        updated_by: userId,
         fecha_pago: new Date().toISOString()
       })
       .eq('id', id);
@@ -1895,6 +1995,8 @@ window.marcarPagadoParcial = async function(tabla, id) {
     const montoOriginal = parseFloat(registro?.monto_bs) || 0;
     const saldoPendiente = montoOriginal - totalPagado;
 
+    const userId = getUserId();
+
     const { error } = await supabaseDB
       .from(tabla)
       .update({
@@ -1903,7 +2005,7 @@ window.marcarPagadoParcial = async function(tabla, id) {
         saldo_pendiente: saldoPendiente > 0 ? saldoPendiente : 0,
         pagado: saldoPendiente <= 0,
         updated_at: new Date().toISOString(),
-        updated_by: estado.usuario?.email || 'unknown',
+        updated_by: userId,
         fecha_pago: new Date().toISOString()
       })
       .eq('id', id);
@@ -1925,6 +2027,8 @@ window.marcarPagoNegociacion = async function(tabla, id) {
   const detalle = prompt('Describa el intercambio/negociación realizada:');
   if (!detalle) return;
 
+  const userId = getUserId();
+
   try {
     const { error } = await supabaseDB
       .from(tabla)
@@ -1933,7 +2037,7 @@ window.marcarPagoNegociacion = async function(tabla, id) {
         tipo_pago: 'negociacion',
         detalle_negociacion: detalle,
         updated_at: new Date().toISOString(),
-        updated_by: estado.usuario?.email || 'unknown',
+        updated_by: userId,
         fecha_pago: new Date().toISOString()
       })
       .eq('id', id);
@@ -1953,6 +2057,14 @@ window.marcarPagoNegociacion = async function(tabla, id) {
 
 async function registrarHistorialPago(tabla, registroId, tipoPago, monto, detalle = null) {
   try {
+    const companyId = getCompanyId();
+    const userId = getUserId();
+
+    if (!companyId) {
+      console.error('Error de seguridad: sesión inválida');
+      return;
+    }
+
     await supabaseDB
       .from('staging_pagos_historial')
       .insert({
@@ -1961,8 +2073,9 @@ async function registrarHistorialPago(tabla, registroId, tipoPago, monto, detall
         tipo_pago: tipoPago,
         monto: monto,
         detalle: detalle,
-        registrado_por: estado.usuario?.email || 'unknown',
-        fecha_registro: new Date().toISOString()
+        registrado_por: userId,
+        fecha_registro: new Date().toISOString(),
+        company_id: companyId
       });
   } catch (error) {
     console.error('Error al registrar historial de pago:', error);
@@ -2457,12 +2570,20 @@ async function guardarCambiosLead() {
 
   try {
     // Actualizar el lead
+    const companyId = getCompanyId();
+    const userId = getUserId();
+
+    if (!companyId) {
+      mostrarToast('error', 'Error de Seguridad', 'Sesión inválida');
+      return;
+    }
+
     const { error } = await supabaseDB
       .from('staging_leads')
       .update({
         estado_lead: nuevoEstado,
         updated_at: new Date().toISOString(),
-        updated_by: estado.usuario?.email || 'unknown'
+        updated_by: userId
       })
       .eq('id', leadEnEdicion.id);
 
@@ -2475,8 +2596,9 @@ async function guardarCambiosLead() {
         lead_id: leadEnEdicion.id,
         estado_anterior: estadoAnterior,
         estado_nuevo: nuevoEstado,
-        modificado_por: estado.usuario?.email || 'unknown',
-        fecha_modificacion: new Date().toISOString()
+        modificado_por: userId,
+        fecha_modificacion: new Date().toISOString(),
+        company_id: companyId
       });
 
     mostrarToast('success', '¡Actualizado!', 'Estado del lead actualizado correctamente');
@@ -2599,11 +2721,12 @@ async function confirmarPagoModal() {
   }
 
   const { tabla, id, tipoPago, montoOriginal } = pagoEnEdicion;
+  const userId = getUserId();
 
   try {
     let updateData = {
       updated_at: new Date().toISOString(),
-      updated_by: estado.usuario?.email || 'unknown',
+      updated_by: userId,
       fecha_pago: new Date().toISOString()
     };
 
