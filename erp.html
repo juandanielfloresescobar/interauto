@@ -2645,6 +2645,176 @@
         grid-template-columns: 100px 1fr 40px;
       }
     }
+
+    /* ========== SECCION LLEGADA STOCK ========== */
+    .llegada-section {
+      background: rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .llegada-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .llegada-header h4 {
+      color: #3b82f6;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .llegada-hint {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ========== STOCK INTERAUTO MEJORADO ========== */
+    .stock-interauto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .stock-card-interauto {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 280px;
+    }
+
+    .stock-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .stock-card-modelo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stock-card-anio {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .stock-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stock-card-info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .stock-info-item {
+      font-size: 0.8rem;
+    }
+
+    .stock-info-item .label {
+      color: rgba(255,255,255,0.5);
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .stock-info-item .value {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .stock-card-precios {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: auto;
+    }
+
+    .stock-precio-item {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+    }
+
+    .stock-precio-item .precio-label {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stock-precio-item .precio-valor {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stock-precio-item .precio-valor.cif {
+      color: #3b82f6;
+    }
+
+    .stock-precio-item .precio-valor.venta {
+      color: #22c55e;
+    }
+
+    .stock-card-dias {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .stock-card-dias .dias-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .stock-card-dias .dias-valor {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fbbf24;
+    }
+
+    .stock-card-dias.critico {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .stock-card-dias.critico .dias-valor {
+      color: #ef4444;
+    }
+
+    /* ========== NO UPPERCASE PARA EMAIL ========== */
+    .erp-input.no-uppercase {
+      text-transform: none !important;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3434,11 +3604,11 @@
             <div class="form-row">
               <div class="form-group-erp">
                 <label>Email</label>
-                <input type="email" class="erp-input" name="email" placeholder="correo@ejemplo.com" />
+                <input type="email" class="erp-input no-uppercase" name="email" id="lead-email" placeholder="correo@ejemplo.com" />
               </div>
               <div class="form-group-erp">
                 <label>Ciudad <span class="required">*</span></label>
-                <select class="erp-select" name="ciudad" required>
+                <select class="erp-select" name="ciudad" id="select-ciudad" onchange="toggleCiudadOtro()" required>
                   <option value="">Seleccionar...</option>
                   <option value="Santa Cruz">Santa Cruz</option>
                   <option value="La Paz">La Paz</option>
@@ -3449,7 +3619,15 @@
                   <option value="Potosí">Potosí</option>
                   <option value="Beni">Beni</option>
                   <option value="Pando">Pando</option>
+                  <option value="otro">Otro</option>
                 </select>
+              </div>
+            </div>
+
+            <div class="form-row" id="row-ciudad-otro" style="display: none;">
+              <div class="form-group-erp full-width">
+                <label>Especifique la Ciudad</label>
+                <input type="text" class="erp-input" name="ciudad_otro" id="input-ciudad-otro" placeholder="Nombre de la ciudad..." />
               </div>
             </div>
 
@@ -3705,6 +3883,32 @@
                 <div class="form-group-erp precio-input-group hidden" id="grupo-precio-grupo">
                   <label>Empresa del Grupo</label>
                   <input type="number" class="erp-input" name="precio_grupo" id="input-precio-grupo" placeholder="0.00" step="0.01" min="0" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección Fecha de Llegada -->
+            <div class="llegada-section">
+              <div class="llegada-header">
+                <h4>Información de Llegada</h4>
+                <span class="llegada-hint">Registre la fecha de arribo del vehículo</span>
+              </div>
+              <div class="form-row form-row-3">
+                <div class="form-group-erp">
+                  <label>Punto de Llegada <span class="required">*</span></label>
+                  <select class="erp-select" name="punto_llegada" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="Iquique">Iquique</option>
+                    <option value="Bolivia">Bolivia</option>
+                  </select>
+                </div>
+                <div class="form-group-erp">
+                  <label>Fecha de Llegada <span class="required">*</span></label>
+                  <input type="date" class="erp-input" name="fecha_llegada" required />
+                </div>
+                <div class="form-group-erp">
+                  <label>Días en Stock</label>
+                  <input type="text" class="erp-input" id="dias-en-stock" placeholder="Se calcula automático" readonly style="background: rgba(255,255,255,0.02);" />
                 </div>
               </div>
             </div>

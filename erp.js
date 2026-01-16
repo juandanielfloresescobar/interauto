@@ -2001,31 +2001,54 @@ async function cargarStockParaInterauto() {
 }
 
 function renderStockSimple(item) {
+  // Calcular días en stock
+  const diasEnStock = item.fecha_llegada ? calcularDiasEnStock(item.fecha_llegada) : 0;
+  const diasCritico = diasEnStock > 60; // Más de 60 días es crítico
+
   return `
-    <div class="stock-item">
-      <div class="stock-header">
-        <div class="stock-modelo">${item.modelo || 'N/A'}</div>
+    <div class="stock-card-interauto">
+      <div class="stock-card-header">
+        <div>
+          <div class="stock-card-modelo">${item.modelo || 'N/A'}</div>
+          <div class="stock-card-anio">Año ${item.anio || '-'}</div>
+        </div>
         <span class="registro-status disponible">Disponible</span>
       </div>
-      <div class="stock-details">
-        <div class="stock-detail"><span>VIN:</span> ${item.vin || '-'}</div>
-        <div class="stock-detail"><span>Color:</span> ${item.color || '-'}</div>
-        <div class="stock-detail"><span>Año:</span> ${item.anio || '-'}</div>
-        <div class="stock-detail"><span>Ubicación:</span> ${item.ubicacion || '-'}</div>
-      </div>
-      <div class="precio-row">
-        <div class="precio-card">
-          <div class="precio-card-label">Precio CIF</div>
-          <div class="precio-card-value cif">$${formatNumber(item.precio_costo)}</div>
+      <div class="stock-card-body">
+        <div class="stock-card-info">
+          <div class="stock-info-item">
+            <span class="label">VIN</span>
+            <span class="value">${item.vin || '-'}</span>
+          </div>
+          <div class="stock-info-item">
+            <span class="label">Color</span>
+            <span class="value">${item.color || '-'}</span>
+          </div>
+          <div class="stock-info-item">
+            <span class="label">Ubicación</span>
+            <span class="value">${item.ubicacion || '-'}</span>
+          </div>
+          <div class="stock-info-item">
+            <span class="label">Punto Llegada</span>
+            <span class="value">${item.punto_llegada || '-'}</span>
+          </div>
         </div>
-        <div class="precio-card">
-          <div class="precio-card-label">Cliente Final</div>
-          <div class="precio-card-value venta">$${formatNumber(item.precio_cliente_final)}</div>
+        <div class="stock-card-precios">
+          <div class="stock-precio-item">
+            <span class="precio-label">Precio CIF</span>
+            <span class="precio-valor cif">$${formatNumber(item.precio_costo)}</span>
+          </div>
+          <div class="stock-precio-item">
+            <span class="precio-label">Cliente Final</span>
+            <span class="precio-valor venta">$${formatNumber(item.precio_cliente_final)}</span>
+          </div>
         </div>
-        <div class="precio-card">
-          <div class="precio-card-label">Mayorista</div>
-          <div class="precio-card-value">$${formatNumber(item.precio_mayorista || 0)}</div>
-        </div>
+        ${item.fecha_llegada ? `
+          <div class="stock-card-dias ${diasCritico ? 'critico' : ''}">
+            <span class="dias-label">Tiempo en Stock</span>
+            <span class="dias-valor">${diasEnStock} días</span>
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -2036,13 +2059,58 @@ function renderStockSimple(item) {
 // ==========================================
 document.addEventListener('input', function(e) {
   if (e.target.classList.contains('erp-input') || e.target.classList.contains('erp-textarea')) {
-    // No aplicar a inputs de tipo number, date, email
+    // No aplicar a inputs de tipo number, date, email o con clase no-uppercase
     const tipo = e.target.type;
-    if (!['number', 'date', 'email', 'password'].includes(tipo)) {
+    const noUppercase = e.target.classList.contains('no-uppercase');
+    if (!['number', 'date', 'email', 'password'].includes(tipo) && !noUppercase) {
       const start = e.target.selectionStart;
       const end = e.target.selectionEnd;
       e.target.value = e.target.value.toUpperCase();
       e.target.setSelectionRange(start, end);
+    }
+  }
+});
+
+// ==========================================
+// 21.5 FUNCIONES CIUDAD Y FECHA LLEGADA
+// ==========================================
+// Toggle ciudad otro
+window.toggleCiudadOtro = function() {
+  const select = document.getElementById('select-ciudad');
+  const rowOtro = document.getElementById('row-ciudad-otro');
+  const inputOtro = document.getElementById('input-ciudad-otro');
+
+  if (select && rowOtro) {
+    if (select.value === 'otro') {
+      rowOtro.style.display = 'block';
+      if (inputOtro) inputOtro.required = true;
+    } else {
+      rowOtro.style.display = 'none';
+      if (inputOtro) {
+        inputOtro.required = false;
+        inputOtro.value = '';
+      }
+    }
+  }
+};
+
+// Calcular días en stock
+window.calcularDiasEnStock = function(fechaLlegada) {
+  if (!fechaLlegada) return 0;
+  const llegada = new Date(fechaLlegada);
+  const hoy = new Date();
+  const diffTime = Math.abs(hoy - llegada);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+// Actualizar días en stock en formulario
+document.addEventListener('change', function(e) {
+  if (e.target.name === 'fecha_llegada') {
+    const diasInput = document.getElementById('dias-en-stock');
+    if (diasInput) {
+      const dias = calcularDiasEnStock(e.target.value);
+      diasInput.value = `${dias} días`;
     }
   }
 });

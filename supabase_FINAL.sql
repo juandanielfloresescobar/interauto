@@ -1,7 +1,7 @@
 -- ============================================
 -- SQL COMPLETO PARA ERP GROUP SAA
 -- Esquema: staging
--- Ultima actualizacion: 2026-01-15
+-- Ultima actualizacion: 2026-01-16
 -- ============================================
 -- FUNCIONALIDADES SOPORTADAS:
 -- - Auto-logout despues de 24 horas (manejo frontend)
@@ -11,6 +11,8 @@
 -- - Modal popup para pagos (total, parcial, negociacion)
 -- - Historial de cambios de estado de leads
 -- - Historial de pagos para auditoria
+-- - Stock con fecha de llegada (Iquique/Bolivia) y dias en stock
+-- - Modelos Jetour actualizados
 -- ============================================
 
 -- Crear esquema si no existe
@@ -152,16 +154,18 @@ CREATE TABLE staging.staging_interauto_ingresos (
 
 -- ============================================
 -- LEADS
+-- Con ciudad_otro para ciudades personalizadas
 -- ============================================
 CREATE TABLE staging.staging_leads (
     id BIGSERIAL PRIMARY KEY,
     nombre_cliente VARCHAR(255),
     telefono VARCHAR(50),
-    email VARCHAR(255),
+    email VARCHAR(255), -- No se fuerza mayusculas
     ciudad VARCHAR(100),
+    ciudad_otro VARCHAR(255), -- Para cuando selecciona "Otro"
     marca_interes VARCHAR(100),
     modelo_interes VARCHAR(255),
-    fuente VARCHAR(100),
+    fuente VARCHAR(100), -- Incluye 'call_center_toyosa'
     estado_lead VARCHAR(50) DEFAULT 'pendiente_llamada',
     ejecutivo_derivado VARCHAR(255),
     presupuesto DECIMAL(12,2),
@@ -176,6 +180,7 @@ CREATE TABLE staging.staging_leads (
 
 -- ============================================
 -- HISTORIAL DE LEADS
+-- Para seguimiento de cambios de estado
 -- ============================================
 CREATE TABLE staging.staging_leads_historial (
     id BIGSERIAL PRIMARY KEY,
@@ -188,12 +193,13 @@ CREATE TABLE staging.staging_leads_historial (
 
 -- ============================================
 -- STOCK JETOUR
--- Con Precio CIF y 3 precios de venta
--- Color y Ubicacion como texto libre
+-- Con fecha de llegada y punto (Iquique/Bolivia)
+-- Modelos: X50, X70 MT/AT, X70 PLUS MT/AT, X90,
+-- DASHING MT/AT, T1, T1 PHEV, T2, T2 PHEV, G700, F700
 -- ============================================
 CREATE TABLE staging.staging_jetour_stock (
     id BIGSERIAL PRIMARY KEY,
-    modelo VARCHAR(255),
+    modelo VARCHAR(255), -- Modelos actualizados
     anio INTEGER,
     vin VARCHAR(20) UNIQUE,
     color VARCHAR(100), -- Texto libre
@@ -204,6 +210,10 @@ CREATE TABLE staging.staging_jetour_stock (
     precio_grupo DECIMAL(12,2) DEFAULT 0,
     -- Ubicacion como texto libre
     ubicacion VARCHAR(255),
+    -- NUEVO: Fecha de llegada
+    punto_llegada VARCHAR(50), -- 'Iquique' o 'Bolivia'
+    fecha_llegada DATE, -- Fecha de arribo
+    -- Estado
     estado VARCHAR(50) DEFAULT 'disponible',
     -- Venta
     vendido_a VARCHAR(255),
@@ -252,10 +262,15 @@ CREATE INDEX idx_cobranzas_pagado ON staging.staging_rentacar_cobranzas(pagado);
 CREATE INDEX idx_ventas_fecha ON staging.staging_interauto_ventas(fecha_venta);
 CREATE INDEX idx_ventas_pagado ON staging.staging_interauto_ventas(pagado);
 CREATE INDEX idx_leads_estado ON staging.staging_leads(estado_lead);
+CREATE INDEX idx_leads_created ON staging.staging_leads(created_at);
+CREATE INDEX idx_leads_ciudad ON staging.staging_leads(ciudad);
 CREATE INDEX idx_stock_estado ON staging.staging_jetour_stock(estado);
 CREATE INDEX idx_stock_modelo ON staging.staging_jetour_stock(modelo);
+CREATE INDEX idx_stock_fecha_llegada ON staging.staging_jetour_stock(fecha_llegada);
+CREATE INDEX idx_stock_punto_llegada ON staging.staging_jetour_stock(punto_llegada);
 CREATE INDEX idx_flota_periodo ON staging.staging_rentacar_flota(anio, mes);
 CREATE INDEX idx_pagos_tabla ON staging.staging_pagos_historial(tabla_origen, registro_id);
+CREATE INDEX idx_leads_historial_lead ON staging.staging_leads_historial(lead_id);
 
 -- ============================================
 -- HABILITAR RLS (Row Level Security)
