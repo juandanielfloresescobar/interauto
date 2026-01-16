@@ -528,6 +528,28 @@ GRANT SELECT ON public.profiles TO authenticated;
 GRANT UPDATE ON public.profiles TO authenticated;
 GRANT SELECT ON public.companies TO authenticated;
 
+-- RLS para profiles (usuario solo puede ver/editar su propio perfil)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "users_read_own_profile" ON public.profiles;
+CREATE POLICY "users_read_own_profile" ON public.profiles
+    FOR SELECT TO authenticated
+    USING (id = auth.uid());
+
+DROP POLICY IF EXISTS "users_update_own_profile" ON public.profiles;
+CREATE POLICY "users_update_own_profile" ON public.profiles
+    FOR UPDATE TO authenticated
+    USING (id = auth.uid())
+    WITH CHECK (id = auth.uid());
+
+-- RLS para companies (usuarios autenticados pueden ver empresas)
+ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "authenticated_read_companies" ON public.companies;
+CREATE POLICY "authenticated_read_companies" ON public.companies
+    FOR SELECT TO authenticated
+    USING (true);
+
 -- Permitir ejecutar funciones
 GRANT EXECUTE ON FUNCTION public.get_my_company_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_user_active() TO authenticated;
@@ -583,7 +605,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Configurar usuarios existentes
+-- ============================================
+-- MIGRACIÓN AUTOMÁTICA: Crear perfiles para TODOS los usuarios existentes
+-- Asigna permisos de administrador por defecto (ajustar después manualmente)
+-- ============================================
+INSERT INTO public.profiles (id, email, company_id, rol, modulos, permisos, nombre_display, activo)
+SELECT
+    u.id,
+    u.email,
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890'::UUID, -- Group SAA
+    'admin', -- Rol por defecto
+    ARRAY['rentacar', 'interauto', 'leads', 'jetour', 'ejecutivo_leads'], -- Todos los módulos
+    ARRAY['ver', 'crear', 'editar', 'eliminar'], -- Todos los permisos
+    COALESCE(u.raw_user_meta_data->>'full_name', SPLIT_PART(u.email, '@', 1)),
+    TRUE
+FROM auth.users u
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.profiles p WHERE p.id = u.id
+);
+
+-- Configurar usuarios específicos (sobreescribe los defaults)
 SELECT public.setup_user_profile('pablo.toro@saavrentacar.com', 'admin', ARRAY['rentacar'], ARRAY['ver', 'crear', 'editar'], 'Rent a Car Admin');
 SELECT public.setup_user_profile('daniela.eguez@groupsaa.com', 'gerente', ARRAY['interauto', 'leads'], ARRAY['ver', 'crear', 'editar'], 'Interauto Admin');
 SELECT public.setup_user_profile('yngrid.numbela@groupsaa.com', 'visualizador', ARRAY['leads'], ARRAY['ver'], 'Leads Manager');
