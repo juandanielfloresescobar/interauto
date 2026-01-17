@@ -261,6 +261,41 @@
       height: 16px;
     }
 
+    /* Botón cambiar módulo */
+    .btn-cambiar-modulo {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 10px;
+      padding: 8px 14px;
+      color: #3b82f6;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-cambiar-modulo:hover {
+      background: rgba(59, 130, 246, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-cambiar-modulo svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .btn-cambiar-modulo .btn-text {
+        display: none;
+      }
+      .btn-cambiar-modulo {
+        padding: 10px;
+      }
+    }
+
     /* ========== CONTENIDO PRINCIPAL ========== */
     .erp-main {
       max-width: 1200px;
@@ -1309,30 +1344,82 @@
     .lead-status-badge {
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       white-space: nowrap;
     }
 
-    .lead-edit-hint {
+    /* Botones de Lead */
+    .lead-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn-ver-historial-lead,
+    .btn-editar-estado-lead {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.4);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid;
     }
 
-    .lead-edit-hint svg {
-      width: 12px;
-      height: 12px;
+    .btn-ver-historial-lead {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #8b5cf6;
     }
 
-    .lead-item.lead-clickeable:hover .lead-edit-hint {
-      opacity: 1;
+    .btn-ver-historial-lead:hover {
+      background: rgba(139, 92, 246, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-editar-estado-lead {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .btn-editar-estado-lead:hover {
+      background: rgba(59, 130, 246, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-ver-historial-lead svg,
+    .btn-editar-estado-lead svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Meta info de leads */
+    .lead-meta-principal {
+      font-size: 0.85rem !important;
+    }
+
+    .lead-meta-interes {
+      color: rgba(255,255,255,0.7) !important;
+    }
+
+    .lead-meta-origen {
+      font-size: 0.78rem !important;
+    }
+
+    .lead-meta-fechas {
+      font-size: 0.72rem !important;
+      color: rgba(255,255,255,0.4) !important;
+      padding-top: 6px;
+      margin-top: 4px;
+      border-top: 1px solid rgba(255,255,255,0.06);
     }
 
     /* KPIs de Leads */
@@ -1415,13 +1502,21 @@
 
       .lead-actions-wrapper {
         grid-column: 2;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch;
         min-width: unset;
         width: 100%;
-        padding-top: 8px;
+        padding-top: 10px;
         border-top: 1px solid rgba(255,255,255,0.06);
+        gap: 10px;
+      }
+
+      .lead-status-badge {
+        text-align: center;
+      }
+
+      .lead-buttons {
+        justify-content: center;
       }
 
       .leads-kpi-section {
@@ -1448,6 +1543,12 @@
 
       .leads-kpi-section .kpi-value {
         font-size: 1.2rem;
+      }
+
+      .btn-ver-historial-lead,
+      .btn-editar-estado-lead {
+        padding: 6px 10px;
+        font-size: 0.7rem;
       }
 
       .lead-status-badge {
@@ -3089,6 +3190,13 @@
         <span id="user-badge" class="erp-badge">—</span>
       </div>
       <div class="erp-header-right">
+        <button class="btn-cambiar-modulo" id="btn-cambiar-modulo" onclick="volverASeleccionModulos()" title="Cambiar módulo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          <span class="btn-text">Módulos</span>
+        </button>
         <button class="btn-notification" id="btn-notifications" title="Notificaciones">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>

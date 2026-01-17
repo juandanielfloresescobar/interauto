@@ -501,6 +501,24 @@ window.seleccionarModulo = function(modulo) {
   mostrarDashboard(modulo);
 };
 
+// Función para volver a la pantalla de selección de módulos
+window.volverASeleccionModulos = function() {
+  // Verificar que el usuario tenga múltiples módulos
+  if (!estado.userRole || !estado.userRole.modulos || estado.userRole.modulos.length <= 1) {
+    mostrarToast('info', 'Info', 'Solo tienes acceso a un módulo');
+    return;
+  }
+
+  // Ocultar dashboard y mostrar selección
+  elementos.erpDashboard.style.display = 'none';
+  elementos.selectionScreen.classList.add('active');
+
+  // Limpiar módulo activo
+  estado.moduloActivo = null;
+
+  mostrarToast('info', 'Selección de Módulo', 'Elige el módulo con el que deseas trabajar');
+};
+
 function mostrarDashboard(modulo) {
   // Ocultar login y selección, mostrar dashboard
   elementos.loginSection.style.display = 'none';
@@ -2848,28 +2866,36 @@ window.renderLead = function(lead) {
       <div class="lead-status-indicator" style="background: ${statusInfo.color};"></div>
       <div class="registro-info">
         <div class="registro-titulo">${lead.nombre_cliente || 'Sin nombre'}</div>
-        <div class="registro-meta">
-          <span><strong>${lead.telefono || '-'}</strong></span>
-          <span>${lead.ciudad || '-'}</span>
-          <span>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
+        <div class="registro-meta lead-meta-principal">
+          <span class="lead-telefono"><strong>${lead.telefono || '-'}</strong></span>
+          <span class="lead-ciudad">${lead.ciudad || '-'}</span>
         </div>
-        <div class="registro-meta">
-          <span>Fuente: <strong>${lead.fuente || '-'}</strong></span>
-          <span>Ejecutivo: <strong>${lead.ejecutivo_derivado || '-'}</strong></span>
+        <div class="registro-meta lead-meta-interes">
+          <span>Interés: <strong>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</strong></span>
         </div>
-        <div class="registro-meta lead-historial-info">
+        <div class="registro-meta lead-meta-origen">
+          <span>Fuente: ${lead.fuente || '-'}</span>
+          <span>Ejecutivo: ${lead.ejecutivo_derivado || '-'}</span>
+        </div>
+        <div class="registro-meta lead-meta-fechas">
           <span>Creado: ${fechaCreacion}</span>
-          <span>Últ. mod: ${fechaUpdate}</span>
+          <span>Modificado: ${fechaUpdate}</span>
         </div>
       </div>
       <div class="lead-actions-wrapper">
         <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color}; border: 1px solid ${statusInfo.color};">${statusInfo.label}</span>
-        ${puedeEditar ? `
-          <div class="lead-edit-hint">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Click para editar
-          </div>
-        ` : ''}
+        <div class="lead-buttons">
+          <button class="btn-ver-historial-lead" onclick="event.stopPropagation(); verHistorialLead(${lead.id})" title="Ver historial de cambios">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Historial
+          </button>
+          ${puedeEditar ? `
+            <button class="btn-editar-estado-lead" onclick="event.stopPropagation(); abrirModalEditLead(${lead.id})" title="Cambiar estado">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar
+            </button>
+          ` : ''}
+        </div>
       </div>
     </div>
   `;
