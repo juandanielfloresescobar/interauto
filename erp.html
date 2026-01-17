@@ -1195,57 +1195,265 @@
       }
     }
 
-    /* ========== ESTILOS LEADS ========== */
+    /* ========== ESTILOS LEADS MEJORADOS ========== */
     .leads-filters {
       display: flex;
       gap: 12px;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .leads-filter {
       flex: 1;
       min-width: 200px;
+      max-width: 300px;
     }
 
-    .leads-list {
-      max-height: 600px;
-    }
-
-    .lead-item {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-
-    .lead-notas {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.8rem;
-      font-style: italic;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .lead-actions {
+    .btn-refresh {
       display: flex;
-      justify-content: flex-end;
-    }
-
-    .lead-status-select {
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 10px;
+      color: #3b82f6;
+      font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      border-width: 1px;
-      border-style: solid;
     }
 
-    .lead-status-select option {
-      background: #1a1f2e;
+    .btn-refresh:hover {
+      background: rgba(59, 130, 246, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-refresh svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .leads-list {
+      max-height: 65vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .lead-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 4px 1fr auto;
+      gap: 16px;
+      padding: 16px 20px 16px 0;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .lead-item.lead-clickeable {
+      cursor: pointer;
+    }
+
+    .lead-item.lead-clickeable:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateX(4px);
+    }
+
+    .lead-status-indicator {
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+      align-self: stretch;
+    }
+
+    .lead-item .registro-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .lead-item .registro-titulo {
+      font-size: 1rem;
+      font-weight: 700;
       color: #fff;
+    }
+
+    .lead-item .registro-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .lead-item .registro-meta strong {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .lead-historial-info {
+      font-size: 0.75rem !important;
+      color: rgba(255,255,255,0.4) !important;
+      margin-top: 4px;
+    }
+
+    .lead-actions-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      min-width: 140px;
+    }
+
+    .lead-status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .lead-edit-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .lead-edit-hint svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .lead-item.lead-clickeable:hover .lead-edit-hint {
+      opacity: 1;
+    }
+
+    /* KPIs de Leads */
+    .leads-kpi-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .leads-kpi-section .kpi-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .leads-kpi-section .kpi-card:hover {
+      background: rgba(255,255,255,0.05);
+      transform: translateY(-2px);
+    }
+
+    .leads-kpi-section .kpi-card.destacado {
+      background: linear-gradient(135deg, rgba(180, 0, 26, 0.15), rgba(239, 35, 60, 0.1));
+      border-color: rgba(180, 0, 26, 0.3);
+    }
+
+    .leads-kpi-section .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .leads-kpi-section .kpi-label {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 4px;
+    }
+
+    .btn-historico {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 8px;
+      color: #8b5cf6;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-historico:hover {
+      background: rgba(139, 92, 246, 0.25);
+    }
+
+    .btn-historico svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Responsive Leads */
+    @media (max-width: 768px) {
+      .lead-item {
+        grid-template-columns: 4px 1fr;
+        gap: 12px;
+      }
+
+      .lead-actions-wrapper {
+        grid-column: 2;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        min-width: unset;
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .leads-kpi-section {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .leads-filter {
+        min-width: unset;
+        max-width: none;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .leads-kpi-section {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 12px;
+      }
+
+      .leads-kpi-section .kpi-card {
+        padding: 12px;
+      }
+
+      .leads-kpi-section .kpi-value {
+        font-size: 1.2rem;
+      }
+
+      .lead-status-badge {
+        font-size: 0.65rem;
+        padding: 5px 10px;
+      }
     }
 
     /* ========== ESTILOS STOCK JETOUR ========== */
