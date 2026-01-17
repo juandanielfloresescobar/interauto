@@ -2837,37 +2837,39 @@ window.renderLead = function(lead) {
   const fechaCreacion = formatearFechaCorta(lead.created_at);
   const fechaUpdate = lead.updated_at ? formatearFecha(lead.updated_at) : '-';
   const puedeEditar = estado.moduloActivo === 'ejecutivo_leads' || estado.moduloActivo === 'leads';
-  const ultimoModificador = lead.updated_by ? lead.updated_by.split('@')[0] : '-';
+  const ultimoModificador = lead.updated_by ? String(lead.updated_by).split('@')[0].substring(0, 8) : '-';
+
+  // El card completo es clickeable si puede editar
+  const clickHandler = puedeEditar ? `onclick="abrirModalEditLead(${lead.id})"` : '';
+  const cursorClass = puedeEditar ? 'lead-clickeable' : '';
 
   return `
-    <div class="registro-item lead-item">
+    <div class="registro-item lead-item ${cursorClass}" ${clickHandler}>
+      <div class="lead-status-indicator" style="background: ${statusInfo.color};"></div>
       <div class="registro-info">
         <div class="registro-titulo">${lead.nombre_cliente || 'Sin nombre'}</div>
         <div class="registro-meta">
-          <span>${lead.telefono || '-'}</span>
-          <span>${lead.email || '-'}</span>
+          <span><strong>${lead.telefono || '-'}</strong></span>
+          <span>${lead.ciudad || '-'}</span>
           <span>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
         </div>
         <div class="registro-meta">
+          <span>Fuente: <strong>${lead.fuente || '-'}</strong></span>
           <span>Ejecutivo: <strong>${lead.ejecutivo_derivado || '-'}</strong></span>
+        </div>
+        <div class="registro-meta lead-historial-info">
           <span>Creado: ${fechaCreacion}</span>
+          <span>Últ. mod: ${fechaUpdate}</span>
         </div>
-        <div class="registro-meta lead-historial">
-          <span>Últ. modificación: ${fechaUpdate}</span>
-          <span>Por: <strong>${ultimoModificador}</strong></span>
-        </div>
-        ${lead.notas ? `<div class="lead-notas">${lead.notas}</div>` : ''}
       </div>
-      <div class="lead-actions">
+      <div class="lead-actions-wrapper">
+        <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color}; border: 1px solid ${statusInfo.color};">${statusInfo.label}</span>
         ${puedeEditar ? `
-          <button class="btn-editar-lead" onclick="abrirModalEditLead(${lead.id})">
+          <div class="lead-edit-hint">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Editar
-          </button>
-          <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
-        ` : `
-          <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
-        `}
+            Click para editar
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
