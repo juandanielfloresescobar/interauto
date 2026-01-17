@@ -1231,7 +1231,7 @@ function formatearFechaCorta(fechaISO) {
 // ==========================================
 // 14. FUNCIONES LEADS
 // ==========================================
-async function cargarRegistrosLeads() {
+window.cargarRegistrosLeads = async function() {
   const container = document.getElementById('list-leads');
   if (!container) return;
 
@@ -1275,30 +1275,69 @@ function renderLead(lead) {
 
   const statusInfo = statusColors[lead.estado_lead] || statusColors['pendiente_llamada'];
   const fechaCreacion = formatearFechaCorta(lead.created_at);
-  const fechaUpdate = lead.updated_at ? formatearFecha(lead.updated_at) : '-';
+  const fechaUpdate = lead.updated_at ? formatearFechaCorta(lead.updated_at) : '-';
   const puedeEditar = estado.tipoUsuario === 'ejecutivo_leads';
   const ultimoModificador = lead.updated_by ? lead.updated_by.split('@')[0] : '-';
 
   return `
-    <div class="registro-item lead-item">
-      <div class="registro-info">
-        <div class="registro-titulo">${lead.nombre_cliente || 'Sin nombre'}</div>
-        <div class="registro-meta">
-          <span>${lead.telefono || '-'}</span>
-          <span>${lead.email || '-'}</span>
-          <span>${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
+    <div class="lead-card">
+      <div class="lead-card-header">
+        <div class="lead-status-indicator" style="background: ${statusInfo.color};"></div>
+        <div class="lead-cliente-info">
+          <h4 class="lead-nombre">${lead.nombre_cliente || 'Sin nombre'}</h4>
+          <span class="lead-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
         </div>
-        <div class="registro-meta">
-          <span>Ejecutivo: <strong>${lead.ejecutivo_derivado || '-'}</strong></span>
-          <span>Creado: ${fechaCreacion}</span>
-        </div>
-        <div class="registro-meta lead-historial">
-          <span>Últ. modificación: ${fechaUpdate}</span>
-          <span>Por: <strong>${ultimoModificador}</strong></span>
-        </div>
-        ${lead.notas ? `<div class="lead-notas">${lead.notas}</div>` : ''}
       </div>
-      <div class="lead-actions">
+
+      <div class="lead-card-body">
+        <div class="lead-row">
+          <div class="lead-field">
+            <span class="lead-label">Teléfono</span>
+            <span class="lead-value">${lead.telefono || '-'}</span>
+          </div>
+          <div class="lead-field">
+            <span class="lead-label">Email</span>
+            <span class="lead-value lead-email">${lead.email || '-'}</span>
+          </div>
+        </div>
+
+        <div class="lead-row">
+          <div class="lead-field">
+            <span class="lead-label">Interés</span>
+            <span class="lead-value">${lead.marca_interes || '-'} ${lead.modelo_interes || ''}</span>
+          </div>
+          <div class="lead-field">
+            <span class="lead-label">Ciudad</span>
+            <span class="lead-value">${lead.ciudad || '-'}</span>
+          </div>
+        </div>
+
+        <div class="lead-row">
+          <div class="lead-field">
+            <span class="lead-label">Ejecutivo</span>
+            <span class="lead-value">${lead.ejecutivo_derivado || '-'}</span>
+          </div>
+          <div class="lead-field">
+            <span class="lead-label">Fuente</span>
+            <span class="lead-value">${lead.fuente || '-'}</span>
+          </div>
+        </div>
+
+        <div class="lead-row lead-fechas">
+          <div class="lead-field">
+            <span class="lead-label">Creado</span>
+            <span class="lead-value">${fechaCreacion}</span>
+          </div>
+          <div class="lead-field">
+            <span class="lead-label">Modificado</span>
+            <span class="lead-value">${fechaUpdate} (${ultimoModificador})</span>
+          </div>
+        </div>
+
+        ${lead.notas ? `<div class="lead-notas"><span class="lead-label">Notas:</span> ${lead.notas}</div>` : ''}
+      </div>
+
+      <div class="lead-card-footer">
         ${puedeEditar ? `
           <select class="lead-status-select" onchange="actualizarEstadoLead(${lead.id}, this.value)" style="background: ${statusInfo.bg}; color: ${statusInfo.color}; border-color: ${statusInfo.color};">
             <option value="pendiente_llamada" ${lead.estado_lead === 'pendiente_llamada' ? 'selected' : ''}>Pendiente Llamada</option>
@@ -1312,12 +1351,11 @@ function renderLead(lead) {
             <option value="no_interesado" ${lead.estado_lead === 'no_interesado' ? 'selected' : ''}>No Interesado</option>
             <option value="no_contesta" ${lead.estado_lead === 'no_contesta' ? 'selected' : ''}>No Contesta</option>
           </select>
-          <button class="btn-ver-historial" onclick="verHistorialLead(${lead.id})" title="Ver historial">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </button>
-        ` : `
-          <span class="lead-status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">${statusInfo.label}</span>
-        `}
+        ` : ''}
+        <button class="btn-historial-lead" onclick="verHistorialLead(${lead.id})" title="Ver historial de cambios">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Historial</span>
+        </button>
       </div>
     </div>
   `;
